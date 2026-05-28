@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja" data-lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#7BBC7E">
+  <meta name="description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
+  <title>エコノフリ - 私の安全管理印刷</title>
+  <link rel="stylesheet" href="css/style.css?v=0.15">
+  <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+</head>
+<body data-app-state="landing">
+  <!-- ヘッダー（左上の縮小ロゴ＋右上のアクション群） -->
+  <header class="app-header">
+    <div class="logo-small" id="logo-small" title="タイトルに戻る">
+      <svg class="paper-icon" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M6 4 L26 4 L34 12 L34 36 L6 36 Z" fill="#FFFFFF" stroke="#5BA060" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M26 4 L34 12 L26 12 Z" fill="#7BBC7E" stroke="#5BA060" stroke-width="2.2" stroke-linejoin="round"/>
+        <line x1="10" y1="19" x2="26" y2="19" stroke="#C8DCC9" stroke-width="1.4"/>
+        <line x1="10" y1="23" x2="28" y2="23" stroke="#C8DCC9" stroke-width="1.4"/>
+        <line x1="10" y1="27" x2="22" y2="27" stroke="#C8DCC9" stroke-width="1.4"/>
+      </svg>
+      <div class="logo-small-text">
+        <div class="logo-small-ja">
+          <span class="big">エコ</span><span class="small">ノフリ</span>
+        </div>
+        <div class="logo-small-en">
+          <span class="big">eco</span> <span class="small">nofuri</span>
+        </div>
+        <div class="logo-small-tag">
+          <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
+          <span class="version">Ver0.15</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-header" id="btn-howto">
+        <span class="ico">?</span><span data-i18n="howTo">使い方</span>
+      </button>
+      <button class="btn-header" id="btn-settings">
+        <span class="ico">⚙</span><span data-i18n="settings">設定</span>
+      </button>
+      <button class="btn-header" id="btn-mini">
+        <span class="ico">▢</span><span data-i18n="mini">小窓表示</span>
+      </button>
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="ja">日</button>
+        <span class="lang-sep">/</span>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- メイン -->
+  <main class="app-main">
+
+    <!-- 中央大ロゴ -->
+    <section class="hero">
+      <div class="hero-logo">
+        <span class="big" data-i18n-attr="hero-ja-big">エコ</span><span class="small" data-i18n-attr="hero-ja-small">ノフリ</span>
+        <svg class="paper-deco" viewBox="0 0 40 40" aria-hidden="true">
+          <!-- 紙本体（表面） -->
+          <path d="M6 4 L26 4 L34 12 L34 36 L6 36 Z" fill="#FFFFFF" stroke="#5BA060" stroke-width="2" stroke-linejoin="round"/>
+          <!-- めくれた角＝裏紙（チラ見せ） -->
+          <path d="M26 4 L34 12 L26 12 Z" fill="#7BBC7E" stroke="#5BA060" stroke-width="2" stroke-linejoin="round"/>
+          <!-- 表面の罫線 -->
+          <line x1="10" y1="19" x2="26" y2="19" stroke="#C8DCC9" stroke-width="1.2"/>
+          <line x1="10" y1="23" x2="28" y2="23" stroke="#C8DCC9" stroke-width="1.2"/>
+          <line x1="10" y1="27" x2="24" y2="27" stroke="#C8DCC9" stroke-width="1.2"/>
+          <line x1="10" y1="31" x2="20" y2="31" stroke="#C8DCC9" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="hero-en">
+        <span class="big">eco</span> <span class="small">nofuri</span>
+      </div>
+      <div class="hero-tag">
+        <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
+      </div>
+      <p class="hero-catch">
+        <span data-i18n="catch1">印刷したいファイルを入れるだけ。</span><br>
+        <span class="accent" data-i18n="accentSurface">表</span><span data-i18n="catchMid">はそのまま、</span><span class="accent" data-i18n="accentBack">裏</span><span data-i18n="catchMid2">はいかにも</span><span class="accent" data-i18n="accentReuse">裏紙</span><span data-i18n="catchEnd">っぽく。</span>
+      </p>
+    </section>
+
+    <!-- ミニ図解（投入→表裏PDF→両面印刷） -->
+    <section class="mini-flow" aria-hidden="true">
+      <!-- ① 投入ファイル -->
+      <div class="flow-step">
+        <div class="flow-art">
+          <svg viewBox="0 0 40 40" width="44" height="44">
+            <path d="M9 4 H25 L31 10 V36 H9 Z" fill="#FFFFFF" stroke="#5BA060" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M25 4 V10 H31" fill="none" stroke="#5BA060" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="13" y1="18" x2="27" y2="18" stroke="#C8DCC9" stroke-width="1.2"/>
+            <line x1="13" y1="22" x2="27" y2="22" stroke="#C8DCC9" stroke-width="1.2"/>
+            <line x1="13" y1="26" x2="23" y2="26" stroke="#C8DCC9" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="flow-label" data-i18n="flow1">投入ファイル</div>
+        <div class="flow-sub" data-i18n="flow1Sub">PDF / 画像 / txt</div>
+      </div>
+
+      <div class="flow-arrow" aria-hidden="true">→</div>
+
+      <!-- ② 表裏交互PDF -->
+      <div class="flow-step">
+        <div class="flow-art flow-art-double">
+          <!-- 表（書類） -->
+          <svg viewBox="0 0 40 40" width="44" height="44" class="flow-front">
+            <path d="M9 4 H25 L31 10 V36 H9 Z" fill="#FFFFFF" stroke="#5BA060" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="13" y1="18" x2="27" y2="18" stroke="#3A7E40" stroke-width="1.2"/>
+            <line x1="13" y1="22" x2="27" y2="22" stroke="#3A7E40" stroke-width="1.2"/>
+            <line x1="13" y1="26" x2="23" y2="26" stroke="#3A7E40" stroke-width="1.2"/>
+            <text x="20" y="34" text-anchor="middle" font-size="6" fill="#5BA060" font-weight="700" data-i18n-svg="表"></text>
+          </svg>
+          <!-- 裏（ダミー） -->
+          <svg viewBox="0 0 40 40" width="44" height="44" class="flow-back">
+            <path d="M9 4 H25 L31 10 V36 H9 Z" fill="#E8F3E9" stroke="#5BA060" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="13" y1="14" x2="27" y2="14" stroke="#7BBC7E" stroke-width="0.8" opacity="0.6"/>
+            <line x1="13" y1="17" x2="27" y2="17" stroke="#7BBC7E" stroke-width="0.8" opacity="0.6"/>
+            <line x1="13" y1="20" x2="27" y2="20" stroke="#7BBC7E" stroke-width="0.8" opacity="0.6"/>
+            <line x1="13" y1="23" x2="22" y2="23" stroke="#7BBC7E" stroke-width="0.8" opacity="0.6"/>
+            <text x="20" y="34" text-anchor="middle" font-size="6" fill="#5BA060" font-weight="700" data-i18n-svg="裏"></text>
+          </svg>
+        </div>
+        <div class="flow-label" data-i18n="flow2">表＝書類／裏＝ダミー</div>
+        <div class="flow-sub" data-i18n="flow2Sub">表裏交互のPDFを生成</div>
+      </div>
+
+      <div class="flow-arrow" aria-hidden="true">→</div>
+
+      <!-- ③ 両面印刷 -->
+      <div class="flow-step">
+        <div class="flow-art">
+          <svg viewBox="0 0 40 40" width="44" height="44">
+            <rect x="6" y="14" width="28" height="14" fill="#FFFFFF" stroke="#5BA060" stroke-width="2"/>
+            <path d="M11 14 V6 H29 V14" fill="none" stroke="#5BA060" stroke-width="2"/>
+            <rect x="11" y="22" width="18" height="12" fill="#FFFFFF" stroke="#5BA060" stroke-width="2"/>
+            <line x1="14" y1="26" x2="26" y2="26" stroke="#7BBC7E" stroke-width="1"/>
+            <line x1="14" y1="29" x2="24" y2="29" stroke="#7BBC7E" stroke-width="1"/>
+            <circle cx="29" cy="18" r="1.5" fill="#7BBC7E"/>
+          </svg>
+        </div>
+        <div class="flow-label" data-i18n="flow3">両面印刷</div>
+        <div class="flow-sub" data-i18n="flow3Sub">"裏紙を使っている体裁"に</div>
+      </div>
+    </section>
+
+    <!-- ドロップエリア -->
+    <section class="dropzone-wrapper" id="dropzone-wrapper">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 48" width="64" height="48">
+            <path d="M48 30c5 0 9-4 9-9 0-5-4-9-9-9-1-7-7-12-14-12-6 0-12 4-14 10-6 1-11 6-11 12 0 7 6 12 13 12h26z" fill="none" stroke="#7BBC7E" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M32 38v-16M24 28l8-8 8 8" fill="none" stroke="#7BBC7E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="dropzone-title" data-i18n="dropTitle">ここにファイルをドラッグ＆ドロップ</div>
+        <div class="dropzone-sub" data-i18n="dropSub">またはクリックして選択</div>
+        <div class="dropzone-types" data-i18n="dropTypes">対応：PDF / 画像（PNG, JPG, WebP）/ txt / テキスト貼り付け</div>
+        <div class="dropzone-multi" data-i18n="dropMulti">複数ファイル・フォルダの投入もOK（直下のファイルのみ）</div>
+        <input type="file" id="file-input" multiple hidden>
+      </div>
+      <!-- テキスト貼り付け欄（折りたたみ） -->
+      <details class="paste-area">
+        <summary data-i18n="pasteToggle">テキストを貼り付けて投入する</summary>
+        <textarea id="paste-text" rows="5" placeholder="ここに本文を貼り付け…"></textarea>
+        <button class="btn-primary" id="btn-paste-add" data-i18n="pasteAdd">この内容で1ファイルとして追加</button>
+      </details>
+    </section>
+
+    <!-- 生成結果（投入後に表示） -->
+    <section class="results hidden" id="results">
+      <header class="results-header">
+        <div class="results-title-wrap">
+          <span class="results-title" data-i18n="resultsTitle">生成結果</span>
+          <span class="results-count">(<span id="results-count">0</span><span data-i18n="ken">件</span>)</span>
+        </div>
+        <div class="results-header-actions">
+          <button class="btn-secondary" id="btn-add-file">
+            ＋ <span data-i18n="addFile">ファイル追加</span>
+          </button>
+          <button class="btn-primary" id="btn-print-all">
+            <span data-i18n="printAll">全て印刷</span>
+          </button>
+        </div>
+      </header>
+      <div class="results-list" id="results-list"></div>
+      <div class="results-status" id="results-status"></div>
+      <div class="results-controls">
+        <label class="density-label">
+          <span data-i18n="density">ダミー濃度</span>
+          <select id="density-select">
+            <option value="light" data-i18n="dLight">薄い</option>
+            <option value="normal" data-i18n="dNormal" selected>普通</option>
+            <option value="heavy" data-i18n="dHeavy">濃い</option>
+            <option value="extreme" data-i18n="dExtreme">狂気</option>
+          </select>
+        </label>
+        <button class="btn-link" id="btn-regenerate" data-i18n="regenerate">この濃度で作り直す</button>
+      </div>
+    </section>
+
+    <!-- 3カラム説明 -->
+    <section class="features">
+      <h2 class="features-title" data-i18n="featuresTitle">エコノフリでできること</h2>
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32"><path d="M6 2h8l6 6v14H6z" fill="none" stroke="#7BBC7E" stroke-width="1.6"/><path d="M14 2v6h6" fill="none" stroke="#7BBC7E" stroke-width="1.6"/></svg>
+          </div>
+          <div class="feature-body">
+            <div class="feature-title" data-i18n="feat1Title">表はそのまま</div>
+            <div class="feature-desc" data-i18n="feat1Desc">投入したファイルをそのまま表面にします</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32"><path d="M6 2h8l6 6v14H6z" fill="none" stroke="#7BBC7E" stroke-width="1.6"/><path d="M14 2v6h6" fill="none" stroke="#7BBC7E" stroke-width="1.6"/><path d="M9 13h8M9 16h8M9 19h5" stroke="#92C994" stroke-width="1.2"/></svg>
+          </div>
+          <div class="feature-body">
+            <div class="feature-title" data-i18n="feat2Title">裏はダミーでカモフラージュ</div>
+            <div class="feature-desc" data-i18n="feat2Desc">いかにも裏紙っぽいダミーを1枚ごとに自動生成します</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32"><rect x="4" y="9" width="16" height="9" fill="none" stroke="#7BBC7E" stroke-width="1.6"/><path d="M7 9V4h10v5" fill="none" stroke="#7BBC7E" stroke-width="1.6"/><rect x="7" y="14" width="10" height="6" fill="none" stroke="#7BBC7E" stroke-width="1.6"/></svg>
+          </div>
+          <div class="feature-body">
+            <div class="feature-title" data-i18n="feat3Title">表裏交互のPDFを生成</div>
+            <div class="feature-desc" data-i18n="feat3Desc">両面印刷するだけで裏紙を使っている体裁に</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ファイル追加 overlay（結果画面でフロート表示） -->
+  <div class="overlay dropzone-overlay" id="dropzone-overlay" aria-hidden="true">
+    <div class="overlay-card">
+      <button class="overlay-close" id="dropzone-overlay-close" aria-label="close">×</button>
+      <h3 class="overlay-title" data-i18n="addFile">ファイル追加</h3>
+      <div class="dropzone" id="dropzone-overlay-inner">
+        <div class="dropzone-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 48" width="48" height="36">
+            <path d="M48 30c5 0 9-4 9-9 0-5-4-9-9-9-1-7-7-12-14-12-6 0-12 4-14 10-6 1-11 6-11 12 0 7 6 12 13 12h26z" fill="none" stroke="#7BBC7E" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M32 38v-16M24 28l8-8 8 8" fill="none" stroke="#7BBC7E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="dropzone-title" data-i18n="dropTitle">ここにファイルをドラッグ＆ドロップ</div>
+        <div class="dropzone-sub" data-i18n="dropSub">またはクリックして選択</div>
+        <div class="dropzone-types" data-i18n="dropTypes">対応：PDF / 画像（PNG, JPG, WebP）/ txt / テキスト貼り付け</div>
+        <input type="file" id="file-input-overlay" multiple hidden>
+      </div>
+    </div>
+  </div>
+
+  <!-- 使い方 overlay -->
+  <div class="overlay howto-overlay" id="howto-overlay" aria-hidden="true">
+    <div class="overlay-card howto-card">
+      <button class="overlay-close" id="howto-close" aria-label="close">×</button>
+      <h3 class="overlay-title" data-i18n="howTo">使い方</h3>
+      <ol class="howto-list">
+        <li><strong data-i18n="howStep1">ファイルを投入</strong><span data-i18n="howStep1Desc">：PDF / 画像 / txt をドラッグ＆ドロップ、クリック選択、貼り付け、フォルダごとどれでも。</span></li>
+        <li><strong data-i18n="howStep2">表裏交互PDF</strong><span data-i18n="howStep2Desc">：投入したファイルが表、自動生成のダミーが裏。表面はそのまま読める。</span></li>
+        <li><strong data-i18n="howStep3">確認・印刷・保存</strong><span data-i18n="howStep3Desc">：「表示」で中身を見て、「印刷」で両面印刷、「PDFを保存」でダウンロード。</span></li>
+        <li><strong data-i18n="howStep4">濃度切替</strong><span data-i18n="howStep4Desc">：薄い／普通／濃い／狂気 で裏紙の盛り具合が変わる。「狂気」は印刷大失敗演出が乗る。</span></li>
+        <li><strong data-i18n="howStep5">緊急回避</strong><span data-i18n="howStep5Desc">：Escキー2連打で擬態モードへ（上司が来たとき用）。</span></li>
+      </ol>
+      <p class="howto-note" data-i18n="howNote">すべてブラウザ内で処理。ファイルは外部に送信されません。</p>
+
+      <div class="howto-support">
+        <h4 class="howto-support-title" data-i18n="supportTitle">気に入ったら…</h4>
+        <p class="howto-support-text" data-i18n="supportText">無料で公開しているアプリです。「面白かった」「役に立った」と思っていただけたら、開発の励みになります。よろしければ支援・シェアをお願いします。</p>
+        <div class="howto-support-actions">
+          <a href="https://ko-fi.com/kinomeno" target="_blank" rel="noopener" class="howto-support-btn"><span data-i18n="supportKofi">☞ ko-fiで支援</span></a>
+          <a href="https://note.com/kinomeno" target="_blank" rel="noopener" class="howto-support-btn"><span data-i18n="supportNote">☞ noteでチップ</span></a>
+          <a href="#" target="_blank" rel="noopener" class="howto-support-btn share-x-link" id="howto-share-x">
+            <svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>
+            </svg>
+            <span data-i18n="supportShare">Xでシェアして応援</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- プレビュー overlay（表＋裏Canvas横並び） -->
+  <div class="overlay preview-overlay" id="preview-overlay" aria-hidden="true">
+    <div class="overlay-card preview-card">
+      <header class="preview-header">
+        <span class="preview-name" id="preview-name"></span>
+        <button class="overlay-close" id="preview-close" aria-label="close">×</button>
+      </header>
+      <div class="preview-body">
+        <div class="preview-pages">
+          <div class="preview-page preview-page-front">
+            <div class="preview-label" data-i18n="previewFront">表</div>
+            <canvas id="preview-canvas-front"></canvas>
+          </div>
+          <div class="preview-page preview-page-back">
+            <div class="preview-label" data-i18n="previewBack">裏</div>
+            <canvas id="preview-canvas-back"></canvas>
+          </div>
+        </div>
+      </div>
+      <footer class="preview-footer" id="preview-footer">
+        <button class="preview-nav-btn" id="preview-prev" aria-label="prev">◀</button>
+        <span class="preview-page-indicator" id="preview-indicator">1 / 1</span>
+        <button class="preview-nav-btn" id="preview-next" aria-label="next">▶</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- プライバシー明示バー -->
+  <div class="privacy-bar">
+    <span class="lock" aria-hidden="true">🔒</span>
+    <span data-i18n="privacy">すべてブラウザ内で処理しています。ファイルは外部に送信されません。</span>
+    <a href="#" class="privacy-link" data-i18n="privacyMore">プライバシーについて ›</a>
+  </div>
+
+  <!-- Escヒント -->
+  <div class="esc-hint" id="esc-hint">
+    <span class="esc-key">Esc</span>
+    <span data-i18n="escHint">を2連打で擬態モードへ</span>
+    <button class="esc-close" id="esc-close" aria-label="close">×</button>
+  </div>
+
+  <!-- フッター（キノメノ + 支援リンク + シェア） -->
+  <footer class="brand-footer">
+    <span class="author">キノメノ：<a href="https://note.com/kinomeno" target="_blank" rel="noopener">https://note.com/kinomeno/...</a></span>
+    <a href="https://ko-fi.com/kinomeno" target="_blank" rel="noopener" class="support-link">☞ <span data-i18n="kofi">ko-fiで支援</span></a>
+    <a href="https://note.com/kinomeno" target="_blank" rel="noopener" class="support-link">☞ <span data-i18n="noteTip">noteでチップ</span></a>
+    <a href="#" target="_blank" rel="noopener" class="share-x share-x-link" id="share-x">
+      <svg class="x-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>
+      </svg>
+      <span data-i18n="shareX">Xでシェア</span>
+    </a>
+  </footer>
+
+  <script src="js/i18n.js?v=0.15"></script>
+  <script src="js/file-processor.js?v=0.15"></script>
+  <script src="js/dummy-engine.js?v=0.15"></script>
+  <script src="js/pdf-builder.js?v=0.15"></script>
+  <script src="js/main.js?v=0.15"></script>
+</body>
+</html>
