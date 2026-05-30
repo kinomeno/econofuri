@@ -1018,6 +1018,42 @@ body.mini-mode .esc-hint {
   padding-right: 40px;
 }
 .preview-header .overlay-close { position: static; }
+.preview-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.preview-regen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.preview-regen-btn:hover { border-color: var(--green-main); color: var(--green-deep); }
+.preview-regen-btn:disabled { opacity: 0.5; cursor: wait; }
+.preview-regen-icon { display: inline-block; font-size: 14px; }
+.preview-regen-icon.spinning { animation: spin 0.8s linear infinite; }
+.preview-density-select {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+.result-name.regenerating {
+  color: var(--green-deep);
+  font-style: italic;
+}
 .preview-body {
   flex: 1;
   padding: 24px;

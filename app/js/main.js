@@ -385,6 +385,9 @@
   function previewOne(entry) {
     _previewState = { entry, index: 0 };
     document.getElementById('preview-name').textContent = entry.name;
+    // 濃度ドロップダウンを現状濃度に同期
+    const dsel = document.getElementById('preview-density-select');
+    if (dsel) dsel.value = state.density;
     renderPreviewPage();
     openOverlay('preview-overlay');
   }
@@ -414,18 +417,62 @@
   }
 
   function setupPreviewNav() {
-    document.getElementById('preview-prev')?.addEventListener('click', () => {
-      if (_previewState.index > 0) {
-        _previewState.index--;
-        renderPreviewPage();
-      }
+    document.getElementById('preview-prev')?.addEventListener('click', previewPrev);
+    document.getElementById('preview-next')?.addEventListener('click', previewNext);
+    // 矢印キー左右でページ送り
+    document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('preview-overlay')?.classList.contains('active')) return;
+      // 入力要素にフォーカスがある場合はスキップ
+      const tag = (e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+      if (e.key === 'ArrowLeft') { e.preventDefault(); previewPrev(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); previewNext(); }
     });
-    document.getElementById('preview-next')?.addEventListener('click', () => {
-      if (_previewState.entry && _previewState.index < _previewState.entry.pageCount - 1) {
-        _previewState.index++;
-        renderPreviewPage();
-      }
+    // 裏面のみ再作成
+    document.getElementById('preview-regen')?.addEventListener('click', () => regenerateBackOnly());
+    // 濃度ドロップダウン変更
+    document.getElementById('preview-density-select')?.addEventListener('change', (e) => {
+      // 選んだだけでは再生成しない。「裏を再作成」を押した時に使う
     });
+  }
+
+  function previewPrev() {
+    if (_previewState.entry && _previewState.index > 0) {
+      _previewState.index--;
+      renderPreviewPage();
+    }
+  }
+  function previewNext() {
+    if (_previewState.entry && _previewState.index < _previewState.entry.pageCount - 1) {
+      _previewState.index++;
+      renderPreviewPage();
+    }
+  }
+
+  /* 裏面のみ再生成（プレビュー画面から） */
+  async function regenerateBackOnly() {
+    const entry = _previewState.entry;
+    if (!entry) return;
+    const density = document.getElementById('preview-density-select')?.value || state.density;
+    const btn = document.getElementById('preview-regen');
+    const icon = btn?.querySelector('.preview-regen-icon');
+    if (btn) btn.disabled = true;
+    if (icon) icon.classList.add('spinning');
+    try {
+      const newSeed = Math.floor(Math.random() * 1e9);
+      const { pdfBytes, backCanvases } = await window.EconofuriPdfBuilder.buildAlternatingPdf(
+        entry.canvases,
+        { density, baseSeed: newSeed }
+      );
+      URL.revokeObjectURL(entry.blobUrl);
+      entry.backCanvases = backCanvases;
+      entry.seed = newSeed;
+      entry.blobUrl = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
+      renderPreviewPage();
+    } finally {
+      if (btn) btn.disabled = false;
+      if (icon) icon.classList.remove('spinning');
+    }
   }
 
   function printOne(entry) {
@@ -454,23 +501,43 @@
   async function regenerateAll() {
     // 既存結果の表ページを使って、現在の濃度で裏ダミーを作り直す
     const items = state.results.slice();
+    const list = document.getElementById('results-list');
+    // 「再生成中…」ラベルに置換（一度クリアして同数のプレースホルダ）
+    list.innerHTML = '';
+    items.forEach(it => {
+      const el = document.createElement('div');
+      el.className = 'result-item result-item-regenerating';
+      el.innerHTML = `
+        <div class="result-icon">${kindIcon(it.kind)}</div>
+        <div class="result-info">
+          <div class="result-name regenerating"></div>
+          <div class="result-meta"><span></span></div>
+        </div>
+      `;
+      el.querySelector('.result-name').textContent = `${it.name}  ${t('regenerating')}`;
+      list.appendChild(el);
+    });
     state.results = [];
-    document.getElementById('results-list').innerHTML = '';
     setStatus(t('processing'));
+    const startedAt = performance.now();
     for (const item of items) {
       URL.revokeObjectURL(item.blobUrl);
+      const newSeed = Math.floor(Math.random() * 1e9);
       const { pdfBytes, backCanvases } = await window.EconofuriPdfBuilder.buildAlternatingPdf(
         item.canvases,
-        { density: state.density, baseSeed: item.seed }
+        { density: state.density, baseSeed: newSeed }
       );
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      const entry = { ...item, blobUrl: url, backCanvases };
+      const entry = { ...item, blobUrl: url, backCanvases, seed: newSeed };
       state.results.push(entry);
-      renderResultItem(entry);
     }
+    // プレースホルダを破棄して本物を描画し直す
+    list.innerHTML = '';
+    state.results.forEach(renderResultItem);
     updateCount();
     updateStatusFinal();
+    appendElapsed(Math.round(performance.now() - startedAt));
   }
 
   /* ---- Escヒント / Esc2連打 ---- */

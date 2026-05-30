@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#7BBC7E">
   <meta name="description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <title>エコノフリ - 私の安全管理印刷</title>
-  <link rel="stylesheet" href="css/style.css?v=0.19">
+  <link rel="stylesheet" href="css/style.css?v=0.20">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -36,7 +36,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.19</span>
+          <span class="version">Ver0.20</span>
         </div>
       </div>
     </div>
@@ -450,7 +450,18 @@
     <div class="overlay-card preview-card">
       <header class="preview-header">
         <span class="preview-name" id="preview-name"></span>
-        <button class="overlay-close" id="preview-close" aria-label="close">×</button>
+        <div class="preview-header-actions">
+          <button class="preview-regen-btn" id="preview-regen" title="裏のみ再作成">
+            <span class="preview-regen-icon">⟳</span><span data-i18n="regenBack">裏を再作成</span>
+          </button>
+          <select class="preview-density-select" id="preview-density-select" title="ダミー濃度">
+            <option value="light" data-i18n="dLight">薄い</option>
+            <option value="normal" data-i18n="dNormal" selected>普通</option>
+            <option value="heavy" data-i18n="dHeavy">濃い</option>
+            <option value="extreme" data-i18n="dExtreme">狂気</option>
+          </select>
+          <button class="overlay-close" id="preview-close" aria-label="close">×</button>
+        </div>
       </header>
       <div class="preview-body">
         <div class="preview-pages">
@@ -499,10 +510,10 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.19"></script>
-  <script src="js/file-processor.js?v=0.19"></script>
-  <script src="js/dummy-engine.js?v=0.19"></script>
-  <script src="js/pdf-builder.js?v=0.19"></script>
-  <script src="js/main.js?v=0.19"></script>
+  <script src="js/i18n.js?v=0.20"></script>
+  <script src="js/file-processor.js?v=0.20"></script>
+  <script src="js/dummy-engine.js?v=0.20"></script>
+  <script src="js/pdf-builder.js?v=0.20"></script>
+  <script src="js/main.js?v=0.20"></script>
 </body>
 </html>
