@@ -61,7 +61,7 @@ python -m http.server 8030
 
 ## 紹介記事
 
-note：https://note.com/kinomeno/ で配信予定
+note：https://note.com/kinomeno/n/ne88c1090c994
 
 ## 支援
 
