@@ -554,11 +554,9 @@
     const settingsBtn = document.getElementById('btn-settings');
     const miniBtn = document.getElementById('btn-mini');
     if (settingsBtn) {
-      settingsBtn.addEventListener('click', () => {
-        const r = document.getElementById('results');
-        if (r && !r.classList.contains('hidden')) r.scrollIntoView({ behavior: 'smooth' });
-      });
+      settingsBtn.addEventListener('click', () => openOverlay('settings-overlay'));
     }
+    setupSettingsPanel();
     if (miniBtn) {
       miniBtn.addEventListener('click', () => toggleMiniMode());
     }
@@ -567,6 +565,97 @@
       openOverlay('dropzone-overlay');
     });
     document.getElementById('cam-exit')?.addEventListener('click', () => toggleCamouflage(false));
+    document.getElementById('settings-close')?.addEventListener('click', () => closeOverlay('settings-overlay'));
+    document.getElementById('settings-overlay')?.addEventListener('click', (e) => {
+      if (e.target.id === 'settings-overlay') closeOverlay('settings-overlay');
+    });
+  }
+
+  /* ---- 設定パネルのロジック ---- */
+  const SETTINGS_KEYS = {
+    unlock: 'econofuri.unlocked',
+    doublePrint: 'econofuri.opt.doublePrint',
+    autoPreview: 'econofuri.opt.autoPreview',
+  };
+  // 暫定パスワード（公開時は note 販売側で配布）
+  const UNLOCK_PASSWORD = 'kinomeno2026';
+
+  function setupSettingsPanel() {
+    // 濃度ラジオ
+    document.querySelectorAll('input[name="settings-density"]').forEach(r => {
+      r.addEventListener('change', () => {
+        state.density = r.value;
+        const sel = document.getElementById('density-select');
+        if (sel) sel.value = r.value;
+      });
+    });
+    // 結果側のセレクト変更を設定側に反映
+    const sel = document.getElementById('density-select');
+    if (sel) {
+      sel.addEventListener('change', () => {
+        const radio = document.querySelector(`input[name="settings-density"][value="${sel.value}"]`);
+        if (radio) radio.checked = true;
+      });
+    }
+
+    // 画面モードボタン
+    document.querySelectorAll('.settings-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.locked === '1' && !btn.classList.contains('unlocked')) return;
+        const mode = btn.dataset.mode;
+        applyScreenMode(mode);
+        closeOverlay('settings-overlay');
+      });
+    });
+
+    // 有料解放
+    const pwInput = document.getElementById('settings-password');
+    const unlockBtn = document.getElementById('settings-unlock-btn');
+    const statusEl = document.getElementById('settings-unlock-status');
+    if (unlockBtn && pwInput) {
+      unlockBtn.addEventListener('click', () => {
+        if (pwInput.value === UNLOCK_PASSWORD) {
+          localStorage.setItem(SETTINGS_KEYS.unlock, '1');
+          applyUnlockState(true);
+          statusEl.textContent = t('unlockOk');
+          statusEl.className = 'settings-unlock-status ok';
+        } else {
+          statusEl.textContent = t('unlockFail');
+          statusEl.className = 'settings-unlock-status fail';
+        }
+      });
+    }
+    applyUnlockState(localStorage.getItem(SETTINGS_KEYS.unlock) === '1');
+
+    // その他オプション
+    const dp = document.getElementById('settings-double-print');
+    const ap = document.getElementById('settings-auto-preview');
+    if (dp) {
+      dp.checked = localStorage.getItem(SETTINGS_KEYS.doublePrint) === '1';
+      dp.addEventListener('change', () => localStorage.setItem(SETTINGS_KEYS.doublePrint, dp.checked ? '1' : '0'));
+    }
+    if (ap) {
+      ap.checked = localStorage.getItem(SETTINGS_KEYS.autoPreview) === '1';
+      ap.addEventListener('change', () => localStorage.setItem(SETTINGS_KEYS.autoPreview, ap.checked ? '1' : '0'));
+    }
+  }
+
+  function applyScreenMode(mode) {
+    document.body.classList.remove('mini-mode', 'camouflage-active');
+    if (mode === 'camouflage') toggleCamouflage(true);
+    else if (mode === 'mini') toggleMiniMode(true);
+    // 'standard' は何もしない（既存UIに戻す）
+    // 有料モード（task/mail/filex）は実装無し、解除済みでも当面 alert で代用
+    if (['task', 'mail', 'filex'].includes(mode)) {
+      alert('このモードは次バージョンで実装予定です。');
+    }
+  }
+
+  function applyUnlockState(unlocked) {
+    document.querySelectorAll('.settings-mode-btn.locked').forEach(btn => {
+      btn.classList.toggle('unlocked', !!unlocked);
+    });
+    state.unlocked = !!unlocked;
   }
 
   function toggleMiniMode(force) {

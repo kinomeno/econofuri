@@ -367,6 +367,105 @@ body[data-app-state="results"] .features {
   50% { opacity: 1; }
 }
 
+/* ===== 設定パネル ===== */
+.settings-card { max-width: 560px; }
+.settings-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-soft);
+}
+.settings-section:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+.settings-h {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green-deep);
+  letter-spacing: 0.04em;
+}
+.settings-density {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+}
+.settings-density label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.settings-note {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+.settings-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings-mode-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-main);
+}
+.settings-mode-btn:hover:not(.locked) {
+  border-color: var(--green-main);
+  background: var(--green-bg-softer);
+  color: var(--green-deep);
+}
+.settings-mode-btn.locked { color: var(--text-mute); cursor: not-allowed; }
+.settings-mode-btn.locked.unlocked { color: var(--text-main); cursor: pointer; }
+.settings-mode-btn.locked.unlocked:hover { border-color: var(--green-main); background: var(--green-bg-softer); color: var(--green-deep); }
+.settings-mode-free, .settings-mode-paid {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--green-bg-soft);
+  color: var(--green-deep);
+}
+.settings-mode-paid { background: #FFE7E0; color: #C84A28; }
+.settings-mode-btn.unlocked .settings-mode-paid { background: var(--green-bg-soft); color: var(--green-deep); }
+.settings-unlock {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.settings-password-input {
+  flex: 1;
+  padding: 7px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+.settings-buy-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--green-deep);
+}
+.settings-unlock-status {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.settings-unlock-status.ok { color: var(--green-deep); }
+.settings-unlock-status.fail { color: #C84A28; }
+.settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-main);
+  margin: 6px 0;
+  cursor: pointer;
+}
+
 /* ===== カモフラージュ画面モード（スプレッドシート風） ===== */
 .cam-mode {
   display: none;
