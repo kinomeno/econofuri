@@ -33,10 +33,12 @@
     }
     const density = opts.density || 'normal';
     const baseSeed = opts.baseSeed || Math.floor(Math.random() * 1e9);
+    const onProgress = opts.onProgress; // (processed, total, phase) => void
 
     const pdfDoc = await PDFLib.PDFDocument.create();
     const backCanvases = [];
 
+    if (onProgress) onProgress(0, frontCanvases.length, 'build');
     for (let i = 0; i < frontCanvases.length; i++) {
       const frontCanvas = frontCanvases[i];
 
@@ -56,7 +58,7 @@
       const dummyCanvas = window.EconofuriDummyEngine.generateDummy(
         frontCanvas.width,
         frontCanvas.height,
-        { density, seed: baseSeed + i * 1000 + 17 }
+        { density, seed: baseSeed + i * 1000 + 17, industries: opts.industries }
       );
       backCanvases.push(dummyCanvas);
 
@@ -67,6 +69,7 @@
         x: 0, y: 0,
         width: A4_PDF.width, height: A4_PDF.height
       });
+      if (onProgress) onProgress(i + 1, frontCanvases.length, 'build');
     }
 
     const pdfBytes = await pdfDoc.save();

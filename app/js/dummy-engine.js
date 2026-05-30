@@ -76,6 +76,14 @@
     'schedule_table', 'budget', 'progress_table', 'contract',
     'handwritten_memo', 'handwritten_doc', 'blueprint', 'typo_pop'
   ];
+  // 業界別パターン（有料解放後に追加される）
+  const PAID_PATTERNS = {
+    construction: ['cons_plan', 'cons_safety', 'cons_progress', 'cons_invoice', 'cons_ky'],
+    sales: ['sales_daily', 'sales_customer', 'sales_visit', 'sales_proposal', 'sales_roleplay'],
+    print: ['print_proof', 'print_check', 'print_pricing', 'print_font', 'print_paper'],
+    restaurant: ['rest_purchase', 'rest_menu', 'rest_stock', 'rest_shift', 'rest_hygiene']
+  };
+  const ALL_PAID = Object.values(PAID_PATTERNS).flat();
 
   /* ========== 公開API ========== */
   function generateDummy(width, height, opts = {}) {
@@ -95,13 +103,21 @@
 
     const failures = pickFailures(rnd, cfg.failureCount);
 
+    // 解放されている業界パターン群を加える
+    const availablePatterns = PATTERNS.slice();
+    if (Array.isArray(opts.industries)) {
+      for (const ind of opts.industries) {
+        const list = PAID_PATTERNS[ind];
+        if (list) availablePatterns.push(...list);
+      }
+    }
     // 主パターン
-    const pattern = pick(rnd, PATTERNS);
+    const pattern = pick(rnd, availablePatterns);
     drawWithFailures(ctx, width, height, pattern, rnd, cfg, failures);
 
     // 追加パターン重ね
     for (let k = 0; k < cfg.extraPatterns; k++) {
-      const extra = pick(rnd, PATTERNS.filter(p => p !== pattern));
+      const extra = pick(rnd, availablePatterns.filter(p => p !== pattern));
       ctx.save();
       ctx.globalAlpha = 0.4;
       ctx.translate(width * (0.05 + rnd() * 0.1), height * (0.45 + rnd() * 0.1));
@@ -1304,6 +1320,459 @@
     ctx.textAlign = 'left';
   }
 
+  /* ========== 業界別パターン群（解放後に追加） ========== */
+
+  // 建設系
+  function drawConsPlan(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '施工計画書', `工事番号 ${randDate(rnd).replace(/\//g,'')}-${Math.floor(rnd()*999)}  ${pickWord(rnd)}建設`);
+    let y = margin + 96;
+    ctx.font = '14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const sections = ['1. 工事概要','2. 工程表','3. 安全管理','4. 品質管理','5. 環境配慮','6. 緊急時対応'];
+    for (const s of sections) {
+      if (y > h - margin) break;
+      ctx.font = 'bold 16px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText(s, margin, y);
+      y += 22;
+      ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      for (let i = 0; i < 3; i++) {
+        if (y > h - margin) break;
+        ctx.fillText('  ・' + pickPhrase(rnd, 5 + Math.floor(rnd()*3)), margin, y);
+        y += 20;
+      }
+      y += 8;
+    }
+  }
+  function drawConsSafety(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '安全衛生管理表', `${randDate(rnd)}  現場：${pickPhrase(rnd, 2)}現場`);
+    const cols = ['日付','作業内容','危険予知','対策','確認者'];
+    const colW = [80, 200, 200, 160, 110];
+    const totalW = colW.reduce((a,b)=>a+b,0);
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg, '230,230,230');
+    ctx.fillRect(margin, y, totalW, 26);
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font = 'bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let xx = margin;
+    for (let c=0; c<cols.length; c++) { ctx.fillText(cols[c], xx+6, y+17); xx += colW[c]; }
+    y += 26;
+    ctx.strokeStyle = inkColor(cfg, '100,100,100');
+    ctx.font = '11px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const rows = Math.min(18, Math.floor((h - margin - y - 30) / 24));
+    for (let r=0; r<rows; r++) {
+      const vals = [randDate(rnd).slice(5), pickPhrase(rnd,2)+'作業', pickPhrase(rnd,2)+'注意', pickPhrase(rnd,2)+'実施', randName(rnd)];
+      let xv = margin;
+      for (let c=0;c<vals.length;c++) { ctx.fillText(vals[c], xv+6, y+15); xv += colW[c]; }
+      ctx.beginPath(); ctx.moveTo(margin, y+24); ctx.lineTo(margin+totalW, y+24); ctx.stroke();
+      y += 24;
+    }
+  }
+  function drawConsProgress(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '工事進捗報告書', `${randDate(rnd)} 報告  ${pickPhrase(rnd, 2)}工事`);
+    let y = margin + 100;
+    ctx.font = '14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillStyle = inkColor(cfg);
+    // ガントチャート風
+    const tasks = ['基礎工事','躯体工事','内装工事','設備工事','外構工事','検査・引渡'];
+    const left = margin + 110;
+    const right = w - margin - 30;
+    for (const t of tasks) {
+      if (y > h - margin - 60) break;
+      ctx.fillText(t, margin, y + 14);
+      ctx.strokeStyle = inkColor(cfg, '180,180,180');
+      ctx.strokeRect(left, y, right - left, 20);
+      const startR = rnd() * 0.4;
+      const endR = startR + 0.2 + rnd() * 0.4;
+      ctx.fillStyle = inkColor(cfg, '120,120,120');
+      ctx.fillRect(left + (right-left)*startR, y + 2, (right-left)*(endR-startR), 16);
+      ctx.fillStyle = inkColor(cfg);
+      y += 28;
+    }
+    ctx.font = '12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText(`進捗率：${Math.floor(rnd()*40+30)}%`, margin, h - margin - 30);
+    ctx.fillText(`予定通り進行中。${randDate(rnd)}完了予定`, margin + 200, h - margin - 30);
+  }
+  function drawConsInvoice(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '工事見積書', `見積番号 K-${Math.floor(rnd()*999999)}  ${randDate(rnd)}`);
+    let y = margin + 100;
+    ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillStyle = inkColor(cfg);
+    ctx.fillText(pickPhrase(rnd,3) + '建設 御中', margin, y);
+    y += 30;
+    drawInvoiceLikeTable(ctx, w, margin, y, h, rnd, cfg, 'cons');
+  }
+  function drawConsKY(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, 'KY（危険予知）活動表', `${randDate(rnd)}  ${pickPhrase(rnd,2)}現場`);
+    let y = margin + 110;
+    ctx.font = '15px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const phases = ['【1R】どんな危険がひそんでいるか','【2R】これが危険のポイントだ','【3R】あなたならどうする','【4R】私たちはこうする'];
+    for (const ph of phases) {
+      if (y > h - margin - 20) break;
+      ctx.fillStyle = inkColor(cfg);
+      ctx.font = 'bold 14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      ctx.fillText(ph, margin, y);
+      y += 22;
+      ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      for (let i=0;i<3;i++) {
+        if (y > h - margin - 20) break;
+        ctx.fillText('  ' + (i+1) + '. ' + pickPhrase(rnd, 4+Math.floor(rnd()*3)), margin, y);
+        y += 20;
+      }
+      y += 10;
+    }
+  }
+
+  // 営業系
+  function drawSalesDaily(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '営業日報', `${randDate(rnd)}  ${randName(rnd)}（${randDept(rnd)}）`);
+    let y = margin + 100;
+    const sections = ['訪問先','商談内容','受注見込','課題・相談','明日の予定'];
+    for (const s of sections) {
+      if (y > h - margin) break;
+      ctx.font = 'bold 15px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText('■ ' + s, margin, y); y += 22;
+      ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      for (let i = 0; i < 3; i++) {
+        if (y > h - margin) break;
+        ctx.fillText('  ・' + pickPhrase(rnd, 4+Math.floor(rnd()*4)), margin, y);
+        y += 20;
+      }
+      y += 8;
+    }
+  }
+  function drawSalesCustomer(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '顧客カード', `${pickPhrase(rnd,3)}株式会社`);
+    let y = margin + 100;
+    const fields = [
+      ['担当者', randName(rnd)+' 様'],
+      ['役職', pick(rnd, ['代表取締役','部長','課長','主任','担当'])],
+      ['住所', '東京都' + pickPhrase(rnd, 1) + '区' + pickPhrase(rnd,1)+'町' + Math.floor(rnd()*100) + '-' + Math.floor(rnd()*100)],
+      ['電話', randTel(rnd)],
+      ['Mail', pickPhrase(rnd,2) + '@example.invalid'],
+      ['業種', pick(rnd, ['製造業','卸売業','小売業','建設業','サービス業'])],
+      ['年商', '¥' + Math.floor(rnd()*9000+1000) + '万円'],
+      ['取引開始', randDate(rnd)],
+    ];
+    ctx.font = '14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (const [lab,val] of fields) {
+      ctx.fillStyle = inkColor(cfg, '100,100,100'); ctx.fillText(lab+':', margin, y);
+      ctx.fillStyle = inkColor(cfg); ctx.fillText(val, margin+100, y);
+      ctx.strokeStyle = inkColor(cfg, '200,200,200');
+      ctx.beginPath(); ctx.moveTo(margin+100, y+4); ctx.lineTo(w-margin, y+4); ctx.stroke();
+      y += 30;
+    }
+    ctx.font = 'bold 14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillStyle = inkColor(cfg); ctx.fillText('■ 備考', margin, y); y += 22;
+    ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (let i=0;i<3 && y<h-margin;i++) { ctx.fillText(pickPhrase(rnd, 6), margin, y); y += 20; }
+  }
+  function drawSalesVisit(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '訪問記録票', `${randDate(rnd)}  ${randName(rnd)}`);
+    const cols = ['時間','訪問先','面談者','内容','次回'];
+    const colW = [80, 180, 100, 240, 130];
+    const totalW = colW.reduce((a,b)=>a+b,0);
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg, '230,230,230');
+    ctx.fillRect(margin, y, totalW, 26);
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font = 'bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let xx=margin; for (let c=0;c<cols.length;c++){ctx.fillText(cols[c], xx+6, y+17); xx+=colW[c];}
+    y += 26;
+    ctx.strokeStyle = inkColor(cfg,'100,100,100'); ctx.font='11px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const rows = Math.min(14, Math.floor((h-margin-y-30)/26));
+    for (let r=0;r<rows;r++) {
+      const vals = [`${9+Math.floor(rnd()*8)}:${Math.floor(rnd()*6)}0`, pickPhrase(rnd,2)+'(株)', randName(rnd), pickPhrase(rnd,3), randDate(rnd).slice(5)];
+      let xv=margin; for (let c=0;c<vals.length;c++){ctx.fillText(vals[c], xv+6, y+16); xv+=colW[c];}
+      ctx.beginPath(); ctx.moveTo(margin,y+26); ctx.lineTo(margin+totalW,y+26); ctx.stroke();
+      y += 26;
+    }
+  }
+  function drawSalesProposal(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, 'ご提案書', `${pickPhrase(rnd,3)}株式会社 様`);
+    let y = margin + 110;
+    ctx.font = 'bold 22px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillStyle = inkColor(cfg);
+    ctx.textAlign='center';
+    ctx.fillText(pickPhrase(rnd,4)+'のご提案', w/2, y); y += 50;
+    ctx.textAlign='left';
+    ctx.font = '15px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const sections = ['1. ご提案の背景','2. ご提案内容','3. 期待される効果','4. お見積もり','5. スケジュール'];
+    for (const s of sections) {
+      if (y > h-margin) break;
+      ctx.font='bold 15px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      ctx.fillText(s, margin, y); y += 22;
+      ctx.font='13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      for (let i=0;i<3 && y<h-margin;i++) { ctx.fillText('  ' + pickPhrase(rnd, 8), margin, y); y += 20; }
+      y += 8;
+    }
+  }
+  function drawSalesRoleplay(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, 'ロールプレイング評価表', `${randDate(rnd)}  評価者：${randName(rnd)}`);
+    let y = margin + 100;
+    const items = ['挨拶・身だしなみ','商品知識','傾聴姿勢','提案力','クロージング','次回アポ取り'];
+    ctx.font = '14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (const it of items) {
+      if (y > h-margin-30) break;
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText(it, margin, y);
+      // ★★★☆☆ 風
+      const score = Math.floor(rnd()*5)+1;
+      ctx.font = '16px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      for (let s=0;s<5;s++) {
+        ctx.fillStyle = inkColor(cfg, s<score ? '40,40,40' : '210,210,210');
+        ctx.fillText('★', margin + 240 + s*22, y);
+      }
+      ctx.font = '14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      ctx.fillStyle = inkColor(cfg, '100,100,100');
+      ctx.fillText(pickPhrase(rnd, 4), margin + 380, y);
+      y += 32;
+    }
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font='bold 14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('総合コメント:', margin, y+10);
+    ctx.font='13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (let i=0;i<3 && y<h-margin;i++) { ctx.fillText(pickPhrase(rnd, 8), margin, y+34+i*22); }
+  }
+
+  // 印刷業界
+  function drawPrintProof(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '色校正確認シート', `案件：${pickPhrase(rnd,3)}印刷  日付：${randDate(rnd)}`);
+    let y = margin + 100;
+    const items = ['版数','部数','用紙','インキ','加工','納期','色味','濃度','見当','文字'];
+    ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (const it of items) {
+      if (y > h-margin-60) break;
+      ctx.fillStyle = inkColor(cfg, '100,100,100');
+      ctx.fillText(it, margin, y);
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText(pickWord(rnd) + ' ' + Math.floor(rnd()*1000), margin+120, y);
+      ctx.strokeStyle = inkColor(cfg, '200,200,200');
+      ctx.beginPath(); ctx.moveTo(margin+120, y+4); ctx.lineTo(margin+500, y+4); ctx.stroke();
+      ctx.fillStyle = inkColor(cfg, '100,100,100');
+      ctx.fillText('確認：', margin+520, y);
+      ctx.strokeStyle = inkColor(cfg);
+      ctx.strokeRect(margin+560, y-13, 16, 16);
+      if (rnd()<0.5) { ctx.beginPath(); ctx.moveTo(margin+563,y-5); ctx.lineTo(margin+567,y-1); ctx.lineTo(margin+574,y-11); ctx.stroke(); }
+      y += 28;
+    }
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font = 'bold 13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('修正指示：', margin, y+10);
+    ctx.font = '12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (let i=0;i<3 && y<h-margin;i++) { ctx.fillText('  ・' + pickPhrase(rnd, 6), margin, y+34+i*20); }
+  }
+  function drawPrintCheck(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '入稿データチェックリスト', `${randDate(rnd)}  担当：${randName(rnd)}`);
+    let y = margin + 100;
+    ctx.font = '13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const checks = ['解像度350dpi以上','カラーモードCMYK','塗り足し3mm','文字アウトライン化','フォント埋め込み','版ズレ確認','断裁線設定','ヌキ・ノセ確認','スポットカラー','レイヤー統合','PDF/X-1a準拠','埋め込み画像最終','トリムマーク','内校確認','クライアント承認'];
+    for (const c of checks) {
+      if (y > h-margin) break;
+      ctx.strokeStyle = inkColor(cfg); ctx.lineWidth=1.5;
+      ctx.strokeRect(margin, y-12, 14, 14);
+      if (rnd() < 0.7) { ctx.beginPath(); ctx.moveTo(margin+2,y-5); ctx.lineTo(margin+6,y-1); ctx.lineTo(margin+13,y-11); ctx.stroke(); }
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText(c, margin+22, y);
+      y += 24;
+    }
+  }
+  function drawPrintPricing(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '印刷料金表', `${randDate(rnd)}改訂  ${pickPhrase(rnd,2)}印刷`);
+    const cols = ['仕様','100部','500部','1000部','5000部'];
+    const colW=[200,90,90,90,90];
+    const totalW = colW.reduce((a,b)=>a+b,0);
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg, '230,230,230');
+    ctx.fillRect(margin, y, totalW, 26);
+    ctx.fillStyle = inkColor(cfg); ctx.font='bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let xx=margin; for (let c=0;c<cols.length;c++){ctx.fillText(cols[c], xx+6, y+17); xx+=colW[c];}
+    y += 26;
+    ctx.font='12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.strokeStyle = inkColor(cfg,'100,100,100');
+    const sizes = ['A4 片面1C','A4 両面1C','A4 両面4C','A3 片面4C','A3 両面4C','B5 片面1C','B5 両面4C','A4 折り加工','A4 ステープル','A4 PP加工'];
+    for (const s of sizes) {
+      if (y > h-margin) break;
+      const base = 3000 + Math.floor(rnd()*5000);
+      const vals = [s, '¥'+base.toLocaleString(), '¥'+(base*3).toLocaleString(), '¥'+(base*5).toLocaleString(), '¥'+(base*15).toLocaleString()];
+      let xv=margin; for (let c=0;c<vals.length;c++){ctx.fillText(vals[c], xv+6, y+18); xv+=colW[c];}
+      ctx.beginPath(); ctx.moveTo(margin, y+26); ctx.lineTo(margin+totalW, y+26); ctx.stroke();
+      y += 26;
+    }
+  }
+  function drawPrintFont(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, 'フォント指定書', `案件：${pickPhrase(rnd,3)}`);
+    let y = margin + 100;
+    ctx.font = '14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const fonts = ['見出し','本文','キャプション','ノンブル','索引','章タイトル','図表番号','脚注'];
+    for (const f of fonts) {
+      if (y > h-margin) break;
+      ctx.fillStyle = inkColor(cfg, '100,100,100'); ctx.fillText(f, margin, y);
+      ctx.fillStyle = inkColor(cfg);
+      const fname = pick(rnd, ['游明朝','游ゴシック','ヒラギノ角ゴ','ヒラギノ明朝','UD新ゴ','フォーク']) + ' ' + pick(rnd, ['L','R','M','B','H']);
+      ctx.fillText(fname, margin+150, y);
+      ctx.fillText((9+Math.floor(rnd()*12))+'Q', margin+360, y);
+      ctx.fillText((10+Math.floor(rnd()*8))+'H', margin+420, y);
+      y += 28;
+    }
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font='bold 14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('■ 備考', margin, y+10);
+    ctx.font='12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (let i=0;i<3 && y<h-margin;i++) ctx.fillText('  ' + pickPhrase(rnd, 6), margin, y+34+i*20);
+  }
+  function drawPrintPaper(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '用紙寸法・規格表', `${randDate(rnd)}更新`);
+    const cols=['規格','寸法(mm)','坪量','用途','在庫'];
+    const colW=[110,140,90,200,80];
+    const totalW = colW.reduce((a,b)=>a+b,0);
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg, '230,230,230'); ctx.fillRect(margin,y,totalW,26);
+    ctx.fillStyle = inkColor(cfg); ctx.font='bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let xx=margin; for (let c=0;c<cols.length;c++){ctx.fillText(cols[c], xx+6, y+17); xx+=colW[c];}
+    y += 26;
+    ctx.font='11px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif'; ctx.strokeStyle = inkColor(cfg,'100,100,100');
+    const papers = [
+      ['A0','841×1189','81.4','大判ポスター'],['A1','594×841','81.4','ポスター'],['A2','420×594','81.4','図面'],
+      ['A3','297×420','81.4','資料'],['A4','210×297','81.4','一般文書'],['A5','148×210','81.4','メモ'],
+      ['B4','257×364','81.4','書類'],['B5','182×257','81.4','書籍'],['B6','128×182','81.4','文庫'],
+      ['ハガキ','100×148','220','DM'],['名刺','55×91','220','名刺'],['四六判','788×1091','81.4','原紙'],
+    ];
+    for (const [name,size,gsm,use] of papers) {
+      if (y > h-margin) break;
+      const stock = pick(rnd, ['○','○','○','△','×']);
+      const vals = [name, size, gsm, use, stock];
+      let xv=margin; for (let c=0;c<vals.length;c++){ctx.fillText(vals[c], xv+6, y+15); xv+=colW[c];}
+      ctx.beginPath(); ctx.moveTo(margin,y+22); ctx.lineTo(margin+totalW,y+22); ctx.stroke();
+      y += 22;
+    }
+  }
+
+  // 飲食業界
+  function drawRestPurchase(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '仕入れリスト', `${randDate(rnd)}  店舗：${pickPhrase(rnd,2)}店`);
+    const cols=['品目','産地','数量','単価','金額','備考'];
+    const colW=[160,100,70,80,90,180];
+    const totalW = colW.reduce((a,b)=>a+b,0);
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg, '230,230,230'); ctx.fillRect(margin,y,totalW,26);
+    ctx.fillStyle = inkColor(cfg); ctx.font='bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let xx=margin; for (let c=0;c<cols.length;c++){ctx.fillText(cols[c], xx+6, y+17); xx+=colW[c];}
+    y += 26;
+    ctx.font='11px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif'; ctx.strokeStyle = inkColor(cfg,'100,100,100');
+    const items = ['キャベツ','レタス','トマト','人参','じゃがいも','玉ねぎ','牛肉','豚肉','鶏肉','鮭','まぐろ','エビ','米','小麦粉','砂糖','塩','油','醤油','味噌','酒','酢','卵','牛乳','チーズ','バター'];
+    const places = ['北海道','千葉','茨城','長野','静岡','熊本','福岡','青森'];
+    let total = 0;
+    for (let r=0;r<Math.min(items.length, 18);r++) {
+      if (y > h-margin-40) break;
+      const qty = Math.floor(rnd()*20+1);
+      const unit = Math.floor(rnd()*2000+200);
+      const amt = qty*unit;
+      total += amt;
+      const vals = [items[r], pick(rnd, places), qty+'kg', '¥'+unit.toLocaleString(), '¥'+amt.toLocaleString(), rnd()<0.3?pickWord(rnd):''];
+      let xv=margin; for (let c=0;c<vals.length;c++){ctx.fillText(vals[c], xv+6, y+15); xv+=colW[c];}
+      ctx.beginPath(); ctx.moveTo(margin,y+22); ctx.lineTo(margin+totalW,y+22); ctx.stroke();
+      y += 22;
+    }
+    ctx.font='bold 14px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('合計：¥'+total.toLocaleString(), margin+totalW-200, y+30);
+  }
+  function drawRestMenu(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, 'メニュー原稿', `${pickPhrase(rnd,2)}亭  ${randDate(rnd)}改訂`);
+    let y = margin + 110;
+    ctx.font = 'bold 18px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const cats = ['前菜','メイン','ご飯もの','デザート','ドリンク'];
+    for (const cat of cats) {
+      if (y > h-margin) break;
+      ctx.fillStyle = inkColor(cfg);
+      ctx.font='bold 16px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      ctx.fillText('━━ ' + cat + ' ━━', margin, y); y += 24;
+      ctx.font='13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+      for (let i=0;i<4 && y<h-margin;i++) {
+        const name = pickPhrase(rnd, 2) + pick(rnd, ['風','の','と']) + pickPhrase(rnd, 1);
+        const price = Math.floor(rnd()*30+5) * 100;
+        ctx.fillText('  ' + name, margin, y);
+        ctx.fillText('¥' + price.toLocaleString(), w - margin - 100, y);
+        y += 20;
+      }
+      y += 10;
+    }
+  }
+  function drawRestStock(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '棚卸表', `${randDate(rnd)}  店舗：${pickPhrase(rnd,2)}店`);
+    const cols=['品目','単位','期首','仕入','売上','期末','差異'];
+    const colW=[160,60,80,80,80,80,80];
+    const totalW = colW.reduce((a,b)=>a+b,0);
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg, '230,230,230'); ctx.fillRect(margin,y,totalW,26);
+    ctx.fillStyle = inkColor(cfg); ctx.font='bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let xx=margin; for (let c=0;c<cols.length;c++){ctx.fillText(cols[c], xx+6, y+17); xx+=colW[c];}
+    y += 26;
+    ctx.font='11px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif'; ctx.strokeStyle = inkColor(cfg,'100,100,100');
+    const items = ['キャベツ','人参','米','油','醤油','酒','酢','卵','牛乳','チーズ','バター','小麦粉','砂糖','塩','胡椒','味噌','鮭','牛肉','鶏肉','豚肉'];
+    for (let r=0;r<Math.min(items.length, 18);r++) {
+      if (y > h-margin) break;
+      const start = Math.floor(rnd()*50+10);
+      const buy = Math.floor(rnd()*30);
+      const sale = Math.floor(rnd()*30);
+      const end = start + buy - sale;
+      const diff = Math.floor((rnd()-0.5)*3);
+      const vals = [items[r], 'kg', start, buy, sale, end, diff];
+      let xv=margin; for (let c=0;c<vals.length;c++){ctx.fillText(String(vals[c]), xv+6, y+15); xv+=colW[c];}
+      ctx.beginPath(); ctx.moveTo(margin,y+22); ctx.lineTo(margin+totalW,y+22); ctx.stroke();
+      y += 22;
+    }
+  }
+  function drawRestShift(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, 'シフト表', `${2018+Math.floor(rnd()*10)}年${1+Math.floor(rnd()*12)}月  ${pickPhrase(rnd,2)}店`);
+    const days = ['月','火','水','木','金','土','日'];
+    const colW = (w - margin*2 - 100) / days.length;
+    let y = margin + 100;
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font='bold 12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('氏名', margin+6, y+17);
+    for (let d=0; d<days.length; d++) {
+      ctx.fillText(days[d], margin+100+d*colW+colW/2-6, y+17);
+    }
+    y += 26;
+    ctx.strokeStyle = inkColor(cfg,'100,100,100');
+    ctx.font='11px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    for (let r=0;r<Math.min(10, Math.floor((h-margin-y)/30));r++) {
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText(randName(rnd), margin+6, y+18);
+      for (let d=0; d<days.length; d++) {
+        const x = margin + 100 + d*colW;
+        ctx.strokeRect(x, y, colW, 26);
+        if (rnd()<0.6) {
+          const shifts = ['10-15','12-18','16-22','18-23','15-21','早','遅','×'];
+          ctx.fillText(pick(rnd, shifts), x+6, y+18);
+        }
+      }
+      y += 26;
+    }
+  }
+  function drawRestHygiene(ctx, w, h, margin, rnd, cfg) {
+    drawHeader(ctx, w, margin, rnd, cfg, '衛生管理チェック表', `${randDate(rnd)}  ${pickPhrase(rnd,2)}店`);
+    let y = margin + 100;
+    ctx.font='13px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    const checks = [
+      '手洗い・消毒の実施','調理器具の洗浄','食材の保管温度確認','冷蔵庫温度（10℃以下）','冷凍庫温度（-15℃以下）',
+      '食材の賞味期限確認','調理場の清掃','床の清掃・消毒','ゴミ箱の清掃','害虫・ネズミ対策',
+      '従業員の体調確認','制服・髪の毛対策','まな板の色分け使用','使い捨て手袋の使用','調理器具の使い分け',
+    ];
+    for (const c of checks) {
+      if (y > h-margin) break;
+      ctx.strokeStyle = inkColor(cfg); ctx.lineWidth=1.5;
+      ctx.strokeRect(margin, y-12, 14, 14);
+      if (rnd() < 0.75) { ctx.beginPath(); ctx.moveTo(margin+2,y-5); ctx.lineTo(margin+6,y-1); ctx.lineTo(margin+13,y-11); ctx.stroke(); }
+      ctx.fillStyle = inkColor(cfg);
+      ctx.fillText(c, margin+22, y);
+      ctx.fillStyle = inkColor(cfg, '100,100,100');
+      ctx.fillText('確認者：' + randName(rnd), w-margin-200, y);
+      y += 26;
+    }
+  }
+
   /* ========== パターン関数マップ ========== */
   const PATTERN_FUNCTIONS = {
     memo: drawMemo,
@@ -1334,6 +1803,27 @@
     handwritten_doc: drawHandwrittenDoc,
     blueprint: drawBlueprint,
     typo_pop: drawTypoPop,
+    // 業界別（解放後）
+    cons_plan: drawConsPlan,
+    cons_safety: drawConsSafety,
+    cons_progress: drawConsProgress,
+    cons_invoice: drawConsInvoice,
+    cons_ky: drawConsKY,
+    sales_daily: drawSalesDaily,
+    sales_customer: drawSalesCustomer,
+    sales_visit: drawSalesVisit,
+    sales_proposal: drawSalesProposal,
+    sales_roleplay: drawSalesRoleplay,
+    print_proof: drawPrintProof,
+    print_check: drawPrintCheck,
+    print_pricing: drawPrintPricing,
+    print_font: drawPrintFont,
+    print_paper: drawPrintPaper,
+    rest_purchase: drawRestPurchase,
+    rest_menu: drawRestMenu,
+    rest_stock: drawRestStock,
+    rest_shift: drawRestShift,
+    rest_hygiene: drawRestHygiene,
   };
 
   /* ========== ノイズ・スタンプ ========== */
@@ -1558,6 +2048,7 @@
   window.EconofuriDummyEngine = {
     generateDummy,
     PATTERNS,
+    PAID_PATTERNS,
     FAILURES,
     PATTERN_COUNT: Object.keys(PATTERN_FUNCTIONS).length
   };

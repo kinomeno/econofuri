@@ -20,7 +20,7 @@
   <meta name="twitter:description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <meta name="twitter:image" content="og-image.png">
   <meta name="author" content="キノメノ / Kinomeno">
-  <link rel="stylesheet" href="css/style.css?v=0.23">
+  <link rel="stylesheet" href="css/style.css?v=0.26">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -50,7 +50,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.23</span>
+          <span class="version">Ver0.26</span>
         </div>
       </div>
     </div>
@@ -286,6 +286,16 @@
       </section>
 
       <section class="settings-section">
+        <h4 class="settings-h">業界別ダミー <span class="settings-paid-note">（解放後に選択可）</span></h4>
+        <div class="settings-industries">
+          <label><input type="checkbox" class="industry-toggle" value="construction" disabled><span>建設系</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="sales" disabled><span>営業系</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="print" disabled><span>印刷業界</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="restaurant" disabled><span>飲食業界</span></label>
+        </div>
+      </section>
+
+      <section class="settings-section">
         <h4 class="settings-h" data-i18n="paidUnlock">有料パターンの解放</h4>
         <p class="settings-note" data-i18n="paidUnlockText">追加パターン（業界別ダミー・有料の画面モード）は解放パスワードで使えるようになります。<br>・購入はこちら（noteの販売ページ「キノメノのパスワード」へリンク）<br>・<b>会員登録は不要</b>です。メールアドレスだけで購入できます。<br>・支払いは PayPay・クレジットカード・Amazon Pay などから選べます。<br>・購入後、メールでパスワードが届きます。</p>
         <div class="settings-unlock">
@@ -302,6 +312,106 @@
         <label class="settings-checkbox"><input type="checkbox" id="settings-auto-preview"><span data-i18n="autoPreview">生成後にプレビューを開く</span></label>
       </section>
     </div>
+  </div>
+
+  <!-- カモフラージュ画面モード：タスク管理風 -->
+  <div class="task-mode" id="task-mode" aria-hidden="true">
+    <header class="task-titlebar">
+      <span class="task-title-icon">📋</span>
+      <span class="task-title-text">プロジェクト管理 - Q2 進捗ボード</span>
+      <span class="task-search">🔍 検索</span>
+      <button class="cam-wbtn" id="task-exit" title="戻る">×</button>
+    </header>
+    <div class="task-nav">
+      <span class="task-tab active">ボード</span>
+      <span class="task-tab">バックログ</span>
+      <span class="task-tab">スプリント</span>
+      <span class="task-tab">レポート</span>
+      <span class="task-spacer"></span>
+      <button class="task-btn" data-cam-act="open">＋ チケット追加</button>
+      <button class="task-btn task-btn-primary" data-cam-act="print-all">🖨 印刷</button>
+    </div>
+    <div class="task-board" id="task-board">
+      <div class="task-col">
+        <div class="task-col-head">📥 未着手 <span class="task-count" id="task-count-todo">0</span></div>
+        <div class="task-col-body" id="task-col-todo"></div>
+      </div>
+      <div class="task-col">
+        <div class="task-col-head">⏳ 進行中 <span class="task-count" id="task-count-doing">0</span></div>
+        <div class="task-col-body" id="task-col-doing"></div>
+      </div>
+      <div class="task-col">
+        <div class="task-col-head">✅ 完了 <span class="task-count" id="task-count-done">0</span></div>
+        <div class="task-col-body" id="task-col-done"></div>
+      </div>
+    </div>
+    <footer class="task-statusbar">
+      <span>Sprint 8</span>
+      <span class="cam-status-sep">|</span>
+      <span>残 5 日</span>
+      <span class="cam-spacer"></span>
+      <span class="cam-hint">Esc 2連打で戻る</span>
+    </footer>
+  </div>
+
+  <!-- カモフラージュ画面モード：メールクライアント風 -->
+  <div class="mail-mode" id="mail-mode" aria-hidden="true">
+    <header class="mail-titlebar">
+      <span class="mail-title-icon">✉</span>
+      <span class="mail-title-text">受信トレイ - keep_calm@example.invalid</span>
+      <button class="cam-wbtn" id="mail-exit" title="戻る">×</button>
+    </header>
+    <div class="mail-toolbar">
+      <button class="mail-tb-btn" data-cam-act="open">📩 新規作成</button>
+      <button class="mail-tb-btn" data-cam-act="regen-all">↻ 同期</button>
+      <button class="mail-tb-btn" data-cam-act="print-all">🖨 印刷</button>
+      <button class="mail-tb-btn" data-cam-act="settings">⚙ 設定</button>
+      <span class="mail-search">🔍 メールを検索</span>
+    </div>
+    <div class="mail-body">
+      <aside class="mail-sidebar">
+        <div class="mail-folder mail-folder-active">📥 受信トレイ <span class="mail-count" id="mail-count-inbox">0</span></div>
+        <div class="mail-folder">⭐ スター付き</div>
+        <div class="mail-folder">📤 送信済み</div>
+        <div class="mail-folder">📝 下書き</div>
+        <div class="mail-folder">🗑 ゴミ箱</div>
+        <div class="mail-folder">📁 アーカイブ</div>
+      </aside>
+      <div class="mail-list" id="mail-list"></div>
+    </div>
+    <footer class="mail-statusbar">
+      <span>接続済み</span>
+      <span class="cam-status-sep">|</span>
+      <span id="mail-total">0 件</span>
+      <span class="cam-spacer"></span>
+      <span class="cam-hint">Esc 2連打で戻る</span>
+    </footer>
+  </div>
+
+  <!-- カモフラージュ画面モード：ファイル転送ツール風 -->
+  <div class="filex-mode" id="filex-mode" aria-hidden="true">
+    <header class="filex-titlebar">
+      <span class="filex-title-icon">⇋</span>
+      <span class="filex-title-text">FastFileTransfer 3.2 - 接続中</span>
+      <button class="cam-wbtn" id="filex-exit" title="戻る">×</button>
+    </header>
+    <div class="filex-toolbar">
+      <button class="filex-tb-btn" data-cam-act="open">📤 アップロード</button>
+      <button class="filex-tb-btn" data-cam-act="regen-all">↻ 再接続</button>
+      <button class="filex-tb-btn" data-cam-act="print-all">📥 ダウンロード</button>
+      <span class="filex-conn">接続: ftp.kinomeno.invalid:21</span>
+    </div>
+    <div class="filex-body">
+      <div class="filex-list" id="filex-list"></div>
+      <div class="filex-log" id="filex-log"></div>
+    </div>
+    <footer class="filex-statusbar">
+      <span>転送中: <span id="filex-current">-</span></span>
+      <span class="cam-status-sep">|</span>
+      <span>通信速度: <span id="filex-speed">0</span> KB/s</span>
+      <span class="cam-spacer"></span>
+      <span class="cam-hint">Esc 2連打で戻る</span>
+    </footer>
   </div>
 
   <!-- カモフラージュ画面モード：スプレッドシート風 -->
@@ -407,6 +517,13 @@
       <div class="processing-spinner"></div>
       <div class="processing-text" data-i18n="processing">生成中…</div>
       <div class="processing-sub" id="processing-sub"></div>
+      <div class="processing-progress">
+        <div class="processing-bar-bg">
+          <div class="processing-bar" id="processing-bar"></div>
+        </div>
+        <div class="processing-percent" id="processing-percent">0%</div>
+      </div>
+      <div class="processing-detail" id="processing-detail"></div>
     </div>
   </div>
 
@@ -526,10 +643,10 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.23"></script>
-  <script src="js/file-processor.js?v=0.23"></script>
-  <script src="js/dummy-engine.js?v=0.23"></script>
-  <script src="js/pdf-builder.js?v=0.23"></script>
-  <script src="js/main.js?v=0.23"></script>
+  <script src="js/i18n.js?v=0.26"></script>
+  <script src="js/file-processor.js?v=0.26"></script>
+  <script src="js/dummy-engine.js?v=0.26"></script>
+  <script src="js/pdf-builder.js?v=0.26"></script>
+  <script src="js/main.js?v=0.26"></script>
 </body>
 </html>

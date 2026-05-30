@@ -465,6 +465,130 @@ body[data-app-state="results"] .features {
   margin: 6px 0;
   cursor: pointer;
 }
+.settings-paid-note { font-size: 11px; color: var(--text-mute); margin-left: 4px; }
+.settings-industries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.settings-industries label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.settings-industries label input:disabled + span { color: var(--text-mute); }
+
+/* ===== カモフラージュ画面モード共通：タスク管理／メール／ファイル転送 ===== */
+.task-mode, .mail-mode, .filex-mode {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #FFFFFF;
+  z-index: 60;
+  flex-direction: column;
+  font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  color: #202124;
+}
+body.task-mode-active .task-mode,
+body.mail-mode-active .mail-mode,
+body.filex-mode-active .filex-mode { display: flex; }
+body.task-mode-active .app-header,
+body.task-mode-active .app-main,
+body.task-mode-active .privacy-bar,
+body.task-mode-active .brand-footer,
+body.task-mode-active .esc-hint,
+body.mail-mode-active .app-header,
+body.mail-mode-active .app-main,
+body.mail-mode-active .privacy-bar,
+body.mail-mode-active .brand-footer,
+body.mail-mode-active .esc-hint,
+body.filex-mode-active .app-header,
+body.filex-mode-active .app-main,
+body.filex-mode-active .privacy-bar,
+body.filex-mode-active .brand-footer,
+body.filex-mode-active .esc-hint {
+  display: none !important;
+}
+
+/* タスク管理風 */
+.task-titlebar { display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #5B3DE3; color: #fff; font-size: 14px; }
+.task-title-icon { font-size: 16px; }
+.task-title-text { font-weight: 500; }
+.task-search { margin-left: auto; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+.task-titlebar .cam-wbtn { color: #fff; }
+.task-titlebar .cam-wbtn:hover { background: rgba(255,255,255,0.2); }
+.task-nav { display: flex; align-items: center; gap: 4px; padding: 6px 14px; background: #F4F2FB; border-bottom: 1px solid #E4DFF7; font-size: 13px; }
+.task-tab { padding: 4px 12px; color: #555; cursor: default; border-radius: 4px; }
+.task-tab.active { background: #fff; color: #5B3DE3; font-weight: 500; }
+.task-spacer { flex: 1; }
+.task-btn { padding: 5px 12px; font-size: 12px; font-family: inherit; background: #fff; border: 1px solid #D5CFEB; border-radius: 4px; cursor: pointer; color: #5B3DE3; }
+.task-btn-primary { background: #5B3DE3; color: #fff; border-color: #5B3DE3; }
+.task-btn:hover { background: #EAE5F8; }
+.task-btn-primary:hover { background: #4A2DD0; }
+.task-board { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 14px; overflow: hidden; background: #F8F7FC; }
+.task-col { background: #fff; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.task-col-head { padding: 10px 12px; font-size: 13px; font-weight: 600; border-bottom: 1px solid #E4DFF7; color: #5B3DE3; display: flex; align-items: center; gap: 8px; }
+.task-count { background: #EAE5F8; color: #5B3DE3; padding: 1px 8px; border-radius: 999px; font-size: 11px; }
+.task-col-body { flex: 1; overflow: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.task-card { background: #fff; border: 1px solid #E4DFF7; border-radius: 6px; padding: 8px 10px; cursor: pointer; }
+.task-card:hover { border-color: #5B3DE3; }
+.task-card-title { font-size: 13px; font-weight: 500; color: #202124; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-card-meta { font-size: 11px; color: #888; margin-top: 4px; display: flex; gap: 8px; }
+.task-card-actions { margin-top: 6px; display: flex; gap: 4px; }
+.task-card-actions button { background: transparent; border: 1px solid #D5CFEB; padding: 2px 8px; font-size: 11px; font-family: inherit; border-radius: 3px; cursor: pointer; color: #5B3DE3; }
+.task-card-actions button:hover { background: #EAE5F8; }
+.task-statusbar { padding: 6px 14px; background: #F4F2FB; border-top: 1px solid #E4DFF7; font-size: 11px; color: #888; display: flex; align-items: center; gap: 10px; }
+
+/* メールクライアント風 */
+.mail-titlebar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: #0078D4; color: #fff; font-size: 14px; }
+.mail-title-icon { font-size: 18px; }
+.mail-title-text { font-weight: 500; }
+.mail-titlebar .cam-wbtn { color: #fff; margin-left: auto; }
+.mail-toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: #F3F2F1; border-bottom: 1px solid #E1DFDD; font-size: 13px; }
+.mail-tb-btn { padding: 5px 12px; font-size: 12px; font-family: inherit; background: #fff; border: 1px solid #D2D0CE; border-radius: 4px; cursor: pointer; }
+.mail-tb-btn:hover { background: #EAEAEA; border-color: #0078D4; color: #0078D4; }
+.mail-search { margin-left: auto; background: #fff; border: 1px solid #D2D0CE; padding: 4px 10px; border-radius: 4px; font-size: 12px; min-width: 200px; color: #888; }
+.mail-body { flex: 1; display: grid; grid-template-columns: 200px 1fr; overflow: hidden; }
+.mail-sidebar { background: #FAF9F8; padding: 8px 0; border-right: 1px solid #E1DFDD; overflow-y: auto; }
+.mail-folder { padding: 8px 16px; font-size: 13px; cursor: default; display: flex; align-items: center; gap: 8px; }
+.mail-folder:hover { background: #EFEDEB; }
+.mail-folder-active { background: #DEECF9; color: #0078D4; font-weight: 500; }
+.mail-count { margin-left: auto; font-size: 11px; color: #888; }
+.mail-list { overflow-y: auto; }
+.mail-item { padding: 10px 14px; border-bottom: 1px solid #EFEDEB; cursor: pointer; }
+.mail-item:hover { background: #F3F2F1; }
+.mail-item-row1 { display: flex; align-items: baseline; justify-content: space-between; }
+.mail-item-from { font-size: 13px; font-weight: 500; color: #202124; }
+.mail-item-time { font-size: 11px; color: #888; }
+.mail-item-subject { font-size: 13px; color: #323130; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-item-preview { font-size: 11px; color: #888; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mail-item-actions { margin-top: 6px; display: flex; gap: 4px; }
+.mail-item-actions button { background: transparent; border: none; color: #0078D4; font-size: 11px; cursor: pointer; padding: 0 4px; font-family: inherit; }
+.mail-item-actions button:hover { text-decoration: underline; }
+.mail-statusbar { padding: 6px 14px; background: #F3F2F1; border-top: 1px solid #E1DFDD; font-size: 11px; color: #888; display: flex; align-items: center; gap: 10px; }
+
+/* ファイル転送ツール風 */
+.filex-mode { background: #2D2D30; color: #D4D4D4; font-family: "Consolas", "Hiragino Sans", monospace, sans-serif; }
+.filex-titlebar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #1E1E20; color: #fff; font-size: 13px; border-bottom: 1px solid #3E3E42; }
+.filex-title-icon { color: #00C896; font-size: 16px; }
+.filex-titlebar .cam-wbtn { color: #fff; margin-left: auto; }
+.filex-toolbar { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: #252526; border-bottom: 1px solid #3E3E42; font-size: 12px; }
+.filex-tb-btn { padding: 4px 10px; font-size: 12px; font-family: inherit; background: #3E3E42; color: #D4D4D4; border: 1px solid #555; border-radius: 3px; cursor: pointer; }
+.filex-tb-btn:hover { background: #555; }
+.filex-conn { margin-left: auto; color: #00C896; font-size: 11px; }
+.filex-body { flex: 1; display: grid; grid-template-rows: 1fr 200px; overflow: hidden; }
+.filex-list { overflow-y: auto; padding: 6px 0; }
+.filex-row { display: grid; grid-template-columns: 24px 1fr 90px 130px 110px 80px; gap: 8px; padding: 4px 14px; font-size: 12px; align-items: center; }
+.filex-row:hover { background: #37373D; }
+.filex-row-head { background: #1E1E20; color: #999; border-bottom: 1px solid #3E3E42; }
+.filex-row button { background: transparent; border: 1px solid #555; color: #00C896; font-size: 11px; padding: 1px 6px; font-family: inherit; border-radius: 2px; cursor: pointer; }
+.filex-row button:hover { background: #555; }
+.filex-log { background: #1E1E20; border-top: 1px solid #3E3E42; padding: 6px 12px; overflow-y: auto; font-size: 11px; color: #888; }
+.filex-log .ok { color: #00C896; }
+.filex-log .info { color: #569CD6; }
+.filex-statusbar { padding: 4px 12px; background: #1E1E20; border-top: 1px solid #3E3E42; font-size: 11px; color: #999; display: flex; align-items: center; gap: 10px; }
 
 /* ===== カモフラージュ画面モード（スプレッドシート風） ===== */
 .cam-mode {
@@ -817,6 +941,40 @@ body.mini-mode .esc-hint {
   font-size: 16px;
   color: var(--text-sub);
   min-height: 20px;
+}
+.processing-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 320px;
+  margin-top: 4px;
+}
+.processing-bar-bg {
+  flex: 1;
+  height: 10px;
+  background: var(--green-bg-soft);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.processing-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-main), var(--green-deep));
+  width: 0%;
+  transition: width 0.18s ease-out;
+}
+.processing-percent {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--green-deep);
+  min-width: 44px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.processing-detail {
+  font-size: 12px;
+  color: var(--text-sub);
+  min-height: 18px;
+  font-variant-numeric: tabular-nums;
 }
 .results-controls {
   display: flex;

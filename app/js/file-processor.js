@@ -24,13 +24,14 @@
   }
 
   /* ---- PDF → Canvas配列 ---- */
-  async function pdfToCanvases(file) {
+  async function pdfToCanvases(file, onProgress) {
     if (typeof pdfjsLib === 'undefined') {
       throw new Error('pdf.js が読み込まれていません');
     }
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const canvases = [];
+    if (onProgress) onProgress(0, pdf.numPages, 'read');
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       // ページの自然サイズを取得し、A4に収まる倍率でレンダリング
@@ -50,6 +51,7 @@
       await page.render({ canvasContext: ctx, viewport }).promise;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       canvases.push(canvas);
+      if (onProgress) onProgress(i, pdf.numPages, 'read');
     }
     return canvases;
   }
@@ -141,12 +143,12 @@
   }
 
   /* ---- 統一エントリ ---- */
-  async function processFile(file) {
+  async function processFile(file, onProgress) {
     const kind = detectKind(file);
     if (!kind) return { ok: false, reason: 'unsupported', name: file.name };
     try {
       let canvases;
-      if (kind === 'pdf') canvases = await pdfToCanvases(file);
+      if (kind === 'pdf') canvases = await pdfToCanvases(file, onProgress);
       else if (kind === 'image') canvases = await imageToCanvas(file);
       else if (kind === 'text') canvases = await textToCanvases(file);
       return { ok: true, name: file.name, kind, canvases };
