@@ -293,6 +293,8 @@
     }
     updateCount();
     updateStatusFinal();
+    // mini-mode の結果リストも更新
+    if (document.body.classList.contains('mini-mode')) renderMiniResults();
   }
 
   /* ---- 結果リスト DOM ---- */
@@ -509,10 +511,45 @@
       });
     }
     if (miniBtn) {
-      miniBtn.addEventListener('click', () => {
-        document.body.classList.toggle('mini-mode');
-      });
+      miniBtn.addEventListener('click', () => toggleMiniMode());
     }
+    document.getElementById('mini-panel-expand')?.addEventListener('click', () => toggleMiniMode(false));
+    document.getElementById('mini-panel-add')?.addEventListener('click', () => {
+      openOverlay('dropzone-overlay');
+    });
+  }
+
+  function toggleMiniMode(force) {
+    const willBeMini = typeof force === 'boolean' ? force : !document.body.classList.contains('mini-mode');
+    document.body.classList.toggle('mini-mode', willBeMini);
+    const panel = document.getElementById('mini-panel');
+    if (panel) panel.setAttribute('aria-hidden', willBeMini ? 'false' : 'true');
+    if (willBeMini) renderMiniResults();
+  }
+
+  function renderMiniResults() {
+    const list = document.getElementById('mini-panel-results');
+    if (!list) return;
+    if (!state.results.length) {
+      list.innerHTML = `<div class="mini-empty">${t('miniEmpty')}</div>`;
+      return;
+    }
+    list.innerHTML = '';
+    state.results.forEach((entry, idx) => {
+      const el = document.createElement('div');
+      el.className = 'mini-result-item';
+      el.innerHTML = `
+        <span class="mini-result-name"></span>
+        <div class="mini-result-actions">
+          <button data-act="preview">${t('preview')}</button>
+          <button data-act="print">${t('print')}</button>
+        </div>
+      `;
+      el.querySelector('.mini-result-name').textContent = entry.name;
+      el.querySelector('[data-act="preview"]').addEventListener('click', () => previewOne(entry));
+      el.querySelector('[data-act="print"]').addEventListener('click', () => printOne(entry));
+      list.appendChild(el);
+    });
   }
 
 })();
