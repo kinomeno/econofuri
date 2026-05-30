@@ -175,11 +175,95 @@ def make_pdf_multi(path):
     pages[0].save(path, "PDF", resolution=150.0, save_all=True, append_images=pages[1:])
 
 
+def make_pdf_heavy(path, pages_count=30):
+    """重たいPDF（30ページ＋ノイズ模様で数MB）。エコノフリの処理時間テスト用。"""
+    import random
+    W, H = 1240, 1754
+    pages = []
+    title_font = get_font(56)
+    body_font = get_font(28)
+    page_font = get_font(22)
+    small_font = get_font(20)
+    for page_no in range(1, pages_count + 1):
+        img = Image.new("RGB", (W, H), "white")
+        draw = ImageDraw.Draw(img)
+
+        # ヘッダ帯（毎ページ異なる濃淡）
+        shade = 60 + (page_no * 7) % 80
+        draw.rectangle([(0, 0), (W, 80)], fill=(shade, 120, shade // 2 + 50))
+        draw.text((100, 18), f"テスト用 重たいPDF（{pages_count}ページ）", fill="white", font=title_font)
+
+        # ページ番号
+        draw.text((100, 110), f"ページ {page_no} / {pages_count}", fill="#777777", font=page_font)
+        draw.line([(100, 150), (W - 100, 150)], fill="#7BBC7E", width=3)
+
+        # 本文：ランダムな段落を5-7個
+        random.seed(page_no * 13 + 1)
+        y = 200
+        sections = [
+            "■ 概要",
+            "■ 詳細",
+            "■ 背景",
+            "■ 経緯",
+            "■ 検討事項",
+            "■ 対応方針",
+            "■ 今後の課題",
+        ]
+        for section in sections:
+            if y > H - 200:
+                break
+            draw.text((100, y), section, fill="#202124", font=body_font)
+            y += 50
+            lines = 4 + random.randint(0, 3)
+            for _ in range(lines):
+                if y > H - 200:
+                    break
+                draw.text((130, y), "・" + _filler_line(random), fill="#202124", font=small_font)
+                y += 36
+            y += 20
+
+        # 適度なノイズ模様（ファイルサイズ稼ぎ）
+        for _ in range(800):
+            px = random.randint(0, W - 1)
+            py = random.randint(160, H - 1)
+            g = random.randint(180, 250)
+            draw.point((px, py), fill=(g, g, g))
+
+        # 表（行×列、各ページ違うデータ）
+        if page_no % 3 == 0:
+            ty = max(y + 20, H - 600)
+            draw.text((100, ty), "[ 集計表 ]", fill="#202124", font=body_font)
+            ty += 50
+            cols = 5
+            col_w = (W - 200) // cols
+            for r in range(8):
+                for c in range(cols):
+                    x = 100 + c * col_w
+                    draw.rectangle([x, ty + r * 40, x + col_w, ty + (r + 1) * 40], outline="#999999")
+                    val = f"{random.randint(100, 9999):,}" if c > 0 else f"項目{r + 1}"
+                    draw.text((x + 8, ty + r * 40 + 8), val, fill="#202124", font=small_font)
+
+        # フッタ
+        draw.text((W - 200, H - 50), f"テスト書類 {page_no}", fill="#999999", font=page_font)
+
+        pages.append(img)
+
+    pages[0].save(path, "PDF", resolution=150.0, save_all=True, append_images=pages[1:])
+
+
+def _filler_line(rnd):
+    # 擬似日本語的な長文1行
+    chars = "資料報告検討内容確認実施項目進捗予定担当部門課題追加変更修正資材改善計画提案承認発行通知"
+    n = 14 + rnd.randint(0, 10)
+    return "".join(chars[rnd.randint(0, len(chars) - 1)] for _ in range(n))
+
+
 def main():
     make_landscape_image(os.path.join(HERE, "04_画像_横長.png"))
     make_portrait_image(os.path.join(HERE, "05_画像_縦長.jpg"))
     make_pdf_single(os.path.join(HERE, "06_PDF_1ページ.pdf"))
     make_pdf_multi(os.path.join(HERE, "07_PDF_複数ページ.pdf"))
+    make_pdf_heavy(os.path.join(HERE, "08_PDF_重たい_30ページ.pdf"))
     print("done")
 
 
