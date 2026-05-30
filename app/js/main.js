@@ -191,11 +191,12 @@
       const text = ta.value.trim();
       if (!text) return;
       const startedAt = performance.now();
-      setStatus(t('processing'));
+      showProcessing('1 / 1');
       showResultsArea();
       const result = window.EconofuriFileProcessor.processPastedText(text);
       ta.value = '';
       await processResults([result]);
+      hideProcessing();
       appendElapsed(Math.round(performance.now() - startedAt));
     });
   }
@@ -219,7 +220,7 @@
     state.startedAt = startedAt;
     state.targetCount = files.length;
     state.processedCount = 0;
-    setStatus(`${t('processing')} 0 / ${files.length}`);
+    showProcessing(`0 / ${files.length}`);
     showResultsArea();
 
     const processed = [];
@@ -227,11 +228,29 @@
       const r = await window.EconofuriFileProcessor.processFile(file);
       processed.push(r);
       state.processedCount++;
-      setStatus(`${t('processing')} ${state.processedCount} / ${files.length}`);
+      showProcessing(`${state.processedCount} / ${files.length}`);
     }
     await processResults(processed);
+    hideProcessing();
     const elapsed = Math.round(performance.now() - startedAt);
     appendElapsed(elapsed);
+  }
+
+  function showProcessing(sub) {
+    const ov = document.getElementById('processing-overlay');
+    if (ov) {
+      ov.classList.add('active');
+      ov.setAttribute('aria-hidden', 'false');
+    }
+    const subEl = document.getElementById('processing-sub');
+    if (subEl) subEl.textContent = sub || '';
+  }
+  function hideProcessing() {
+    const ov = document.getElementById('processing-overlay');
+    if (ov) {
+      ov.classList.remove('active');
+      ov.setAttribute('aria-hidden', 'true');
+    }
   }
 
   function appendElapsed(ms) {

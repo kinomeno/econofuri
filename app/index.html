@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#7BBC7E">
   <meta name="description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <title>エコノフリ - 私の安全管理印刷</title>
-  <link rel="stylesheet" href="css/style.css?v=0.15">
+  <link rel="stylesheet" href="css/style.css?v=0.16">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -36,7 +36,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.15</span>
+          <span class="version">Ver0.16</span>
         </div>
       </div>
     </div>
@@ -243,6 +243,15 @@
 
   </main>
 
+  <!-- 生成中 大表示オーバーレイ -->
+  <div class="processing-overlay" id="processing-overlay" aria-hidden="true">
+    <div class="processing-box">
+      <div class="processing-spinner"></div>
+      <div class="processing-text" data-i18n="processing">生成中…</div>
+      <div class="processing-sub" id="processing-sub"></div>
+    </div>
+  </div>
+
   <!-- ファイル追加 overlay（結果画面でフロート表示） -->
   <div class="overlay dropzone-overlay" id="dropzone-overlay" aria-hidden="true">
     <div class="overlay-card">
@@ -348,10 +357,10 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.15"></script>
-  <script src="js/file-processor.js?v=0.15"></script>
-  <script src="js/dummy-engine.js?v=0.15"></script>
-  <script src="js/pdf-builder.js?v=0.15"></script>
-  <script src="js/main.js?v=0.15"></script>
+  <script src="js/i18n.js?v=0.16"></script>
+  <script src="js/file-processor.js?v=0.16"></script>
+  <script src="js/dummy-engine.js?v=0.16"></script>
+  <script src="js/pdf-builder.js?v=0.16"></script>
+  <script src="js/main.js?v=0.16"></script>
 </body>
 </html>

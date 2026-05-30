@@ -362,20 +362,50 @@ body[data-app-state="results"] .features {
   color: var(--text-sub);
   text-align: right;
 }
-.results-status:not(:empty)::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: var(--green-main);
-  border-radius: 50%;
-  margin-right: 6px;
-  vertical-align: middle;
-  animation: pulse 1s infinite;
-}
 @keyframes pulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
+}
+
+/* ===== 生成中 大表示オーバーレイ ===== */
+.processing-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.processing-overlay.active { display: flex; }
+.processing-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.processing-spinner {
+  width: 64px;
+  height: 64px;
+  border: 5px solid var(--green-bg-soft);
+  border-top-color: var(--green-main);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.processing-text {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--green-deep);
+  letter-spacing: 0.06em;
+}
+.processing-sub {
+  font-size: 16px;
+  color: var(--text-sub);
+  min-height: 20px;
 }
 .results-controls {
   display: flex;

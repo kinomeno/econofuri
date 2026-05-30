@@ -73,7 +73,8 @@
     'daily_report', 'weekly_report', 'monthly_report', 'travel_report',
     'leave_request', 'expense_report', 'org_chart', 'flow_chart',
     'checklist', 'invoice', 'quote', 'inventory',
-    'schedule_table', 'budget', 'progress_table', 'contract'
+    'schedule_table', 'budget', 'progress_table', 'contract',
+    'handwritten_memo', 'handwritten_doc', 'blueprint', 'typo_pop'
   ];
 
   /* ========== 公開API ========== */
@@ -147,18 +148,19 @@
 
   /* ========== 濃度設定（要素の量と失敗演出数で段階分け） ========== */
   function densityConfig(density) {
+    // スタンプは「100枚に1度」が基本。狂気でも控えめ
     switch (density) {
       case 'light':
-        return { alpha: 0.95, contentLines: 12, noise: 0.012, stampProb: 0.12, stampCount: 1, ruleProb: 0.7, extraPatterns: 0, failureCount: 0 };
+        return { alpha: 0.95, contentLines: 12, noise: 0.012, stampProb: 0.01, stampCount: 1, ruleProb: 0.7, extraPatterns: 0, failureCount: 0 };
       case 'normal':
-        return { alpha: 0.95, contentLines: 22, noise: 0.018, stampProb: 0.25, stampCount: 1, ruleProb: 0.9, extraPatterns: 0, failureCount: 1 };
+        return { alpha: 0.95, contentLines: 22, noise: 0.018, stampProb: 0.01, stampCount: 1, ruleProb: 0.9, extraPatterns: 0, failureCount: 1 };
       case 'heavy':
-        return { alpha: 0.95, contentLines: 36, noise: 0.025, stampProb: 0.55, stampCount: 2, ruleProb: 1.0, extraPatterns: 1, failureCount: 2 };
+        return { alpha: 0.95, contentLines: 36, noise: 0.025, stampProb: 0.02, stampCount: 1, ruleProb: 1.0, extraPatterns: 1, failureCount: 2 };
       case 'extreme':
-        // 狂気：印刷大失敗。失敗演出全部のせ＋重ね多数＋スタンプ多数
-        return { alpha: 0.95, contentLines: 30, noise: 0.1, stampProb: 1.0, stampCount: 6, ruleProb: 1.0, extraPatterns: 5, failureCount: 10 };
+        // 狂気でもスタンプは控えめ（出る時は2-3個）
+        return { alpha: 0.95, contentLines: 30, noise: 0.1, stampProb: 0.08, stampCount: 3, ruleProb: 1.0, extraPatterns: 5, failureCount: 10 };
       default:
-        return { alpha: 0.95, contentLines: 22, noise: 0.018, stampProb: 0.25, stampCount: 1, ruleProb: 0.9, extraPatterns: 0, failureCount: 1 };
+        return { alpha: 0.95, contentLines: 22, noise: 0.018, stampProb: 0.01, stampCount: 1, ruleProb: 0.9, extraPatterns: 0, failureCount: 1 };
     }
   }
 
@@ -203,6 +205,13 @@
     }
     if (failures.includes('tornMemo')) {
       drawTornMemo(ctx, w, h, rnd, cfg);
+      ctx.restore();
+      return;
+    }
+    if (failures.includes('blackoutQuote')) {
+      // 見積書を描いて、金額欄を黒ペンでぐちゃぐちゃ塗りつぶし
+      drawQuote(ctx, w, h, 50, rnd, cfg);
+      drawBlackout(ctx, w, h, rnd);
       ctx.restore();
       return;
     }
@@ -1087,6 +1096,214 @@
     ctx.fillText('— 2 —', w / 2 - 12, h - 8);
   }
 
+  /* ========== 新パターン群（手書き・図面・POP） ========== */
+
+  function drawHandwrittenMemo(ctx, w, h, margin, rnd, cfg) {
+    // 手書き風：傾き＋ストロークの揺れ
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.rotate((rnd() - 0.5) * 0.06);
+    ctx.translate(-w/2, -h/2);
+    // 罫線（うすい）
+    ctx.strokeStyle = inkColor(cfg, '200,200,200');
+    ctx.lineWidth = 0.5;
+    for (let y = margin + 50; y < h - margin; y += 36) {
+      ctx.beginPath();
+      ctx.moveTo(margin, y);
+      ctx.lineTo(w - margin, y);
+      ctx.stroke();
+    }
+    // タイトル（手書き風＝太字＋微妙な傾き）
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font = 'bold 32px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    drawWobblyText(ctx, pickPhrase(rnd, 2) + 'メモ', margin + 10, margin + 36, rnd);
+    // 本文
+    ctx.font = '22px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let y = margin + 90;
+    const lines = 8 + Math.floor(cfg.contentLines / 3);
+    for (let i = 0; i < lines && y < h - margin; i++) {
+      const indent = rnd() < 0.3 ? 30 : 0;
+      drawWobblyText(ctx, (rnd() < 0.5 ? '・' : '') + pickPhrase(rnd, 3 + Math.floor(rnd() * 4)), margin + 10 + indent, y, rnd);
+      y += 36;
+    }
+    // 矢印や囲み枠（手書き感）
+    if (rnd() < 0.6) {
+      ctx.strokeStyle = inkColor(cfg);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      const ax = w * 0.6;
+      const ay = h * (0.3 + rnd() * 0.3);
+      ctx.moveTo(ax, ay);
+      ctx.bezierCurveTo(ax + 80, ay - 20, ax + 100, ay + 30, ax + 160, ay + 10);
+      ctx.stroke();
+      // 矢印先
+      ctx.beginPath();
+      ctx.moveTo(ax + 160, ay + 10);
+      ctx.lineTo(ax + 150, ay + 4);
+      ctx.moveTo(ax + 160, ay + 10);
+      ctx.lineTo(ax + 152, ay + 18);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawWobblyText(ctx, text, x, y, rnd) {
+    // 1文字ずつ y を揺らす
+    let cx = x;
+    for (const ch of text) {
+      const yo = (rnd() - 0.5) * 3;
+      ctx.fillText(ch, cx, y + yo);
+      cx += ctx.measureText(ch).width;
+    }
+  }
+
+  function drawHandwrittenDoc(ctx, w, h, margin, rnd, cfg) {
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.rotate((rnd() - 0.5) * 0.04);
+    ctx.translate(-w/2, -h/2);
+    // 原稿用紙風の薄い格子
+    ctx.strokeStyle = inkColor(cfg, '210,210,210');
+    ctx.lineWidth = 0.4;
+    const gridY = margin + 70;
+    for (let y = gridY; y < h - margin; y += 30) {
+      ctx.beginPath();
+      ctx.moveTo(margin, y); ctx.lineTo(w - margin, y);
+      ctx.stroke();
+    }
+    // タイトル
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font = 'bold 30px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    drawWobblyText(ctx, pickPhrase(rnd, 3) + 'について', margin + 10, margin + 36, rnd);
+    // 日付・署名
+    ctx.font = '18px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText(randDate(rnd) + '  ' + randName(rnd), w - margin - 220, margin + 36);
+    // 本文（手書き感）
+    ctx.font = '20px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    let y = gridY + 22;
+    for (let i = 0; i < cfg.contentLines * 0.8 && y < h - margin; i++) {
+      drawWobblyText(ctx, pickPhrase(rnd, 6 + Math.floor(rnd() * 4)), margin + 14, y, rnd);
+      y += 30;
+    }
+    // 署名（最後に右下）
+    ctx.font = 'bold 22px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    drawWobblyText(ctx, '以上', w - margin - 80, h - margin - 40, rnd);
+    ctx.restore();
+  }
+
+  function drawBlueprint(ctx, w, h, margin, rnd, cfg) {
+    // 図面っぽい：外枠＋部屋分け＋寸法線＋寸法数字
+    ctx.strokeStyle = inkColor(cfg);
+    ctx.lineWidth = 1.5;
+    // 外形（建物の外壁）
+    const ox = margin + 60;
+    const oy = margin + 80;
+    const ow = w - margin * 2 - 120;
+    const oh = h - margin * 2 - 160;
+    ctx.strokeRect(ox, oy, ow, oh);
+    // 内部の壁（部屋分け）
+    const rooms = 3 + Math.floor(rnd() * 3);
+    let splitX = ox + 50;
+    for (let i = 0; i < rooms; i++) {
+      splitX += 60 + rnd() * 100;
+      if (splitX > ox + ow - 40) break;
+      ctx.beginPath();
+      ctx.moveTo(splitX, oy);
+      ctx.lineTo(splitX, oy + oh * (0.4 + rnd() * 0.5));
+      ctx.stroke();
+    }
+    // 水平壁
+    const hSplit = oy + oh * (0.4 + rnd() * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(ox, hSplit);
+    ctx.lineTo(ox + ow * (0.5 + rnd() * 0.4), hSplit);
+    ctx.stroke();
+    // 扉（円弧）
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3 + Math.floor(rnd() * 3); i++) {
+      const dx = ox + 40 + rnd() * (ow - 80);
+      const dy = oy + 40 + rnd() * (oh - 80);
+      ctx.beginPath();
+      ctx.arc(dx, dy, 18, 0, Math.PI / 2);
+      ctx.stroke();
+    }
+    // 寸法線（外側）
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = inkColor(cfg, '80,80,80');
+    ctx.beginPath();
+    ctx.moveTo(ox, oy - 20); ctx.lineTo(ox + ow, oy - 20);
+    ctx.moveTo(ox, oy - 24); ctx.lineTo(ox, oy - 16);
+    ctx.moveTo(ox + ow, oy - 24); ctx.lineTo(ox + ow, oy - 16);
+    ctx.stroke();
+    ctx.fillStyle = inkColor(cfg);
+    ctx.font = '12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText(`${3000 + Math.floor(rnd() * 5000)}`, ox + ow/2 - 18, oy - 24);
+    // 縦の寸法
+    ctx.beginPath();
+    ctx.moveTo(ox - 20, oy); ctx.lineTo(ox - 20, oy + oh);
+    ctx.moveTo(ox - 24, oy); ctx.lineTo(ox - 16, oy);
+    ctx.moveTo(ox - 24, oy + oh); ctx.lineTo(ox - 16, oy + oh);
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(ox - 28, oy + oh/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText(`${2000 + Math.floor(rnd() * 3000)}`, -18, 0);
+    ctx.restore();
+    // 図面タイトル
+    ctx.font = 'bold 18px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText(pickPhrase(rnd, 2) + '平面図  S=1/' + (50 + Math.floor(rnd() * 5) * 10), margin, margin + 36);
+    // 凡例
+    ctx.font = '12px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('単位：mm  ' + randDate(rnd) + '  作図：' + randName(rnd), margin, h - margin - 16);
+  }
+
+  function drawTypoPop(ctx, w, h, margin, rnd, cfg) {
+    // 店内POP風。「ご自由にお持ちくさい」誤字
+    ctx.fillStyle = inkColor(cfg);
+    // 上下に装飾線
+    ctx.strokeStyle = inkColor(cfg);
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(margin + 40, margin + 60);
+    ctx.lineTo(w - margin - 40, margin + 60);
+    ctx.moveTo(margin + 40, h - margin - 60);
+    ctx.lineTo(w - margin - 40, h - margin - 60);
+    ctx.stroke();
+    // メイン文字（特大）
+    ctx.font = 'bold 80px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.textAlign = 'center';
+    const popTexts = [
+      'ご自由にお持ちくさい',
+      'ご自由にお持ちくたさい',
+      'ご自由におとり下さい',
+      '自由にお持ち下さ',
+      'コーピー使用禁止',
+      '無料配布中',
+      'ご来店ありがとう御座います',
+    ];
+    const main = pick(rnd, popTexts);
+    // 改行で2行に
+    const half = Math.ceil(main.length / 2);
+    ctx.fillText(main.slice(0, half), w/2, margin + 220);
+    ctx.fillText(main.slice(half), w/2, margin + 320);
+    // 矢印（手描き風）
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(w/2 - 100, margin + 460);
+    ctx.lineTo(w/2 + 100, margin + 460);
+    ctx.lineTo(w/2 + 70, margin + 430);
+    ctx.moveTo(w/2 + 100, margin + 460);
+    ctx.lineTo(w/2 + 70, margin + 490);
+    ctx.stroke();
+    // サブ文字
+    ctx.font = 'bold 36px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText('↓こちら', w/2, h - margin - 120);
+    // 店舗風サイン
+    ctx.font = '20px "Hiragino Sans","Yu Gothic","Meiryo",sans-serif';
+    ctx.fillText(pickPhrase(rnd, 2) + '商店  ' + randDate(rnd), w/2, h - margin - 80);
+    ctx.textAlign = 'left';
+  }
+
   /* ========== パターン関数マップ ========== */
   const PATTERN_FUNCTIONS = {
     memo: drawMemo,
@@ -1113,6 +1330,10 @@
     budget: drawBudget,
     progress_table: drawProgressTable,
     contract: drawContract,
+    handwritten_memo: drawHandwrittenMemo,
+    handwritten_doc: drawHandwrittenDoc,
+    blueprint: drawBlueprint,
+    typo_pop: drawTypoPop,
   };
 
   /* ========== ノイズ・スタンプ ========== */
@@ -1155,13 +1376,11 @@
   }
 
   /* ========== 印刷失敗演出 ========== */
-  const FAILURES = ['crooked', 'fold', 'sideways', 'smallOverlay', 'upsideDown', 'shift', 'copyUneven', 'rollerLine', 'staplerHole', 'excelOverflow', 'tornMemo', 'badFax'];
+  const FAILURES = ['crooked', 'fold', 'sideways', 'smallOverlay', 'upsideDown', 'shift', 'copyUneven', 'rollerLine', 'staplerHole', 'excelOverflow', 'tornMemo', 'badFax', 'blackoutQuote'];
 
   function pickFailures(rnd, count) {
     if (count <= 0) return [];
-    // 変換系（描画前の座標／全置換）：複数同時は衝突するので1つだけ
-    const transformGroup = ['crooked', 'sideways', 'upsideDown', 'shift', 'smallOverlay', 'excelOverflow', 'tornMemo'];
-    // 後処理系（描画後の被せ）：複数OK
+    const transformGroup = ['crooked', 'sideways', 'upsideDown', 'shift', 'smallOverlay', 'excelOverflow', 'tornMemo', 'blackoutQuote'];
     const postGroup = ['fold', 'copyUneven', 'rollerLine', 'staplerHole', 'badFax'];
     const out = [];
     out.push(...pickN(rnd, transformGroup, 1));
@@ -1174,6 +1393,33 @@
       out.push(...pickN(rnd, postGroup, rest));
     }
     return out;
+  }
+
+  /* 金額欄を黒ペンでぐちゃぐちゃ塗りつぶし */
+  function drawBlackout(ctx, w, h, rnd) {
+    // 右側の金額列付近（見積書は概ね右側）
+    const x0 = w * 0.6;
+    const x1 = w * 0.92;
+    const y0 = h * 0.25;
+    const y1 = h * 0.75;
+    // 太い黒線をジグザグに何本も
+    ctx.strokeStyle = 'rgba(0,0,0,0.95)';
+    ctx.lineCap = 'round';
+    const passes = 3 + Math.floor(rnd() * 4);
+    for (let p = 0; p < passes; p++) {
+      ctx.lineWidth = 8 + rnd() * 6;
+      ctx.beginPath();
+      const startY = y0 + p * ((y1 - y0) / passes) + (rnd() - 0.5) * 10;
+      ctx.moveTo(x0 + rnd() * 20, startY);
+      const steps = 10 + Math.floor(rnd() * 8);
+      for (let s = 0; s < steps; s++) {
+        const px = x0 + ((x1 - x0) * (s + 1)) / steps + (rnd() - 0.5) * 20;
+        const py = startY + (rnd() - 0.5) * 40;
+        ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    ctx.lineCap = 'butt';
   }
 
   function applyCopyUneven(ctx, w, h, rnd) {
