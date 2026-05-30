@@ -20,7 +20,7 @@
   <meta name="twitter:description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <meta name="twitter:image" content="og-image.png">
   <meta name="author" content="キノメノ / Kinomeno">
-  <link rel="stylesheet" href="css/style.css?v=0.22">
+  <link rel="stylesheet" href="css/style.css?v=0.23">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -50,7 +50,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.22</span>
+          <span class="version">Ver0.23</span>
         </div>
       </div>
     </div>
@@ -314,22 +314,22 @@
       </div>
     </header>
     <div class="cam-menubar">
-      <span class="cam-menu">ファイル</span>
-      <span class="cam-menu">編集</span>
-      <span class="cam-menu">表示</span>
-      <span class="cam-menu">挿入</span>
-      <span class="cam-menu">書式</span>
-      <span class="cam-menu">データ</span>
-      <span class="cam-menu">ツール</span>
-      <span class="cam-menu">拡張機能</span>
-      <span class="cam-menu">ヘルプ</span>
+      <span class="cam-menu" data-cam-act="open" title="ファイル追加">ファイル</span>
+      <span class="cam-menu" data-cam-act="edit-noop">編集</span>
+      <span class="cam-menu" data-cam-act="lang" title="日英切替">表示</span>
+      <span class="cam-menu" data-cam-act="open" title="ファイル追加">挿入</span>
+      <span class="cam-menu" data-cam-act="cycle-density" title="濃度切替">書式</span>
+      <span class="cam-menu" data-cam-act="regen-all" title="この濃度で作り直す">データ</span>
+      <span class="cam-menu" data-cam-act="settings" title="設定">ツール</span>
+      <span class="cam-menu" data-cam-act="settings" title="拡張機能">拡張機能</span>
+      <span class="cam-menu" data-cam-act="help" title="使い方">ヘルプ</span>
     </div>
     <div class="cam-toolbar">
-      <span class="cam-tool">↶</span>
-      <span class="cam-tool">↷</span>
-      <span class="cam-tool">🖨</span>
+      <span class="cam-tool" data-cam-act="regen-all" title="作り直す">↶</span>
+      <span class="cam-tool" data-cam-act="regen-all" title="やり直す">↷</span>
+      <span class="cam-tool" data-cam-act="print-all" title="全て印刷">🖨</span>
       <span class="cam-tool sep"></span>
-      <span class="cam-tool">100%</span>
+      <span class="cam-tool" data-cam-act="cycle-density" title="濃度切替" id="cam-density-indicator">普通</span>
       <span class="cam-tool sep"></span>
       <span class="cam-tool"><b>B</b></span>
       <span class="cam-tool"><i>I</i></span>
@@ -339,9 +339,11 @@
       <span class="cam-tool">¥</span>
       <span class="cam-tool">%</span>
       <span class="cam-tool sep"></span>
-      <span class="cam-tool">⥁</span>
-      <span class="cam-tool">Σ</span>
+      <span class="cam-tool" data-cam-act="lang" title="言語切替">⥁</span>
+      <span class="cam-tool" data-cam-act="open" title="ファイル追加">＋</span>
     </div>
+    <!-- 擬態モード用トースト通知 -->
+    <div class="cam-toast" id="cam-toast"></div>
     <div class="cam-name-box">
       <div class="cam-cell-ref">A1</div>
       <div class="cam-formula">fx</div>
@@ -524,10 +526,10 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.22"></script>
-  <script src="js/file-processor.js?v=0.22"></script>
-  <script src="js/dummy-engine.js?v=0.22"></script>
-  <script src="js/pdf-builder.js?v=0.22"></script>
-  <script src="js/main.js?v=0.22"></script>
+  <script src="js/i18n.js?v=0.23"></script>
+  <script src="js/file-processor.js?v=0.23"></script>
+  <script src="js/dummy-engine.js?v=0.23"></script>
+  <script src="js/pdf-builder.js?v=0.23"></script>
+  <script src="js/main.js?v=0.23"></script>
 </body>
 </html>

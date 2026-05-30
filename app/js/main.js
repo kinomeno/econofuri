@@ -574,12 +574,12 @@
     const list = document.getElementById('cam-rows');
     if (!list) return;
     list.innerHTML = '';
+    const filler = (n) => `<div class="cam-cell cam-rownum">${n + 2}</div>` + '<div class="cam-cell"></div>'.repeat(9);
     if (!state.results.length) {
-      // 空のセル群でそれっぽく見せる
       for (let i = 0; i < 12; i++) {
         const row = document.createElement('div');
         row.className = 'cam-row';
-        row.innerHTML = `<div class="cam-cell cam-rownum">${i + 2}</div>` + '<div class="cam-cell"></div>'.repeat(8);
+        row.innerHTML = filler(i);
         list.appendChild(row);
       }
       return;
@@ -596,23 +596,102 @@
         <div class="cam-cell">${entry.pageCount * 2}</div>
         <div class="cam-cell">${kindLabel}</div>
         <div class="cam-cell">完了</div>
+        <div class="cam-cell"><button data-act="preview">表示</button></div>
         <div class="cam-cell"><button data-act="print">印刷</button></div>
         <div class="cam-cell"><button data-act="save">保存</button></div>
         <div class="cam-cell">${time}</div>
         <div class="cam-cell"></div>
       `;
       row.children[1].textContent = entry.name;
+      row.querySelector('[data-act="preview"]').addEventListener('click', () => previewOne(entry));
       row.querySelector('[data-act="print"]').addEventListener('click', () => printOne(entry));
       row.querySelector('[data-act="save"]').addEventListener('click', () => saveOne(entry));
       list.appendChild(row);
     });
-    // 残りの空行
     for (let i = state.results.length; i < 12; i++) {
       const row = document.createElement('div');
       row.className = 'cam-row';
-      row.innerHTML = `<div class="cam-cell cam-rownum">${i + 2}</div>` + '<div class="cam-cell"></div>'.repeat(8);
+      row.innerHTML = filler(i);
       list.appendChild(row);
     }
+  }
+
+  /* ---- 擬態モードのメニュー／ツール／D&D／トースト ---- */
+  function setupCamouflageInteractions() {
+    // メニュー＆ツールバーのクリックハンドラ
+    const actions = {
+      'open': () => openOverlay('dropzone-overlay'),
+      'lang': () => {
+        const cur = document.documentElement.dataset.lang || 'ja';
+        window.EconofuriI18n?.applyLang(cur === 'ja' ? 'en' : 'ja');
+        camToast(cur === 'ja' ? 'English' : '日本語');
+      },
+      'cycle-density': () => cycleDensity(),
+      'regen-all': () => {
+        if (!state.results.length) { camToast('ファイルがありません'); return; }
+        regenerateAll();
+        camToast('再生成中…');
+      },
+      'print-all': () => {
+        if (!state.results.length) { camToast('ファイルがありません'); return; }
+        printAllResults();
+      },
+      'settings': () => openOverlay('settings-overlay'),
+      'help': () => openOverlay('howto-overlay'),
+      'edit-noop': () => {},
+    };
+    document.querySelectorAll('.cam-menu[data-cam-act], .cam-tool[data-cam-act]').forEach(el => {
+      el.addEventListener('click', () => {
+        const act = el.dataset.camAct;
+        if (actions[act]) actions[act]();
+      });
+    });
+
+    // シート全体でD&D受付（擬態UIに溶け込ませる）
+    const sheet = document.getElementById('cam-sheet');
+    if (sheet) {
+      sheet.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        sheet.classList.add('cam-dragover');
+      });
+      sheet.addEventListener('dragleave', () => sheet.classList.remove('cam-dragover'));
+      sheet.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        sheet.classList.remove('cam-dragover');
+        const files = await collectFiles(e.dataTransfer);
+        await handleFiles(files);
+      });
+    }
+    updateCamDensityIndicator();
+  }
+
+  function cycleDensity() {
+    const order = ['light', 'normal', 'heavy', 'extreme'];
+    const idx = order.indexOf(state.density);
+    state.density = order[(idx + 1) % order.length];
+    const sel = document.getElementById('density-select');
+    if (sel) sel.value = state.density;
+    const radio = document.querySelector(`input[name="settings-density"][value="${state.density}"]`);
+    if (radio) radio.checked = true;
+    updateCamDensityIndicator();
+    camToast(`濃度：${densityLabel(state.density)}`);
+  }
+  function updateCamDensityIndicator() {
+    const el = document.getElementById('cam-density-indicator');
+    if (el) el.textContent = densityLabel(state.density);
+  }
+  function densityLabel(d) {
+    return { light: '薄い', normal: '普通', heavy: '濃い', extreme: '狂気' }[d] || d;
+  }
+
+  let _toastTimer = null;
+  function camToast(msg) {
+    const el = document.getElementById('cam-toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
   }
 
   function setupHeaderButtons() {
@@ -632,6 +711,7 @@
       openOverlay('dropzone-overlay');
     });
     document.getElementById('cam-exit')?.addEventListener('click', () => toggleCamouflage(false));
+    setupCamouflageInteractions();
     document.getElementById('settings-close')?.addEventListener('click', () => closeOverlay('settings-overlay'));
     document.getElementById('settings-overlay')?.addEventListener('click', (e) => {
       if (e.target.id === 'settings-overlay') closeOverlay('settings-overlay');
