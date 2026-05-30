@@ -367,6 +367,172 @@ body[data-app-state="results"] .features {
   50% { opacity: 1; }
 }
 
+/* ===== カモフラージュ画面モード（スプレッドシート風） ===== */
+.cam-mode {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #FFFFFF;
+  z-index: 60;
+  font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", "Arial", sans-serif;
+  flex-direction: column;
+  color: #202124;
+}
+body.camouflage-active .cam-mode { display: flex; }
+body.camouflage-active .app-header,
+body.camouflage-active .app-main,
+body.camouflage-active .privacy-bar,
+body.camouflage-active .brand-footer,
+body.camouflage-active .esc-hint {
+  display: none !important;
+}
+.cam-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: #F1F3F4;
+  border-bottom: 1px solid #DADCE0;
+  font-size: 13px;
+}
+.cam-title-text {
+  font-weight: 500;
+  color: #202124;
+}
+.cam-autosave {
+  font-size: 11px;
+  color: #5F6368;
+}
+.cam-window-btns {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.cam-wbtn {
+  width: 24px;
+  height: 22px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: #5F6368;
+}
+.cam-wbtn:hover { background: #E8EAED; border-color: #DADCE0; }
+.cam-menubar {
+  display: flex;
+  gap: 2px;
+  padding: 2px 8px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E8EAED;
+  font-size: 13px;
+}
+.cam-menu {
+  padding: 4px 10px;
+  cursor: default;
+  color: #202124;
+  border-radius: 4px;
+}
+.cam-menu:hover { background: #F1F3F4; }
+.cam-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E8EAED;
+  align-items: center;
+}
+.cam-tool {
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: default;
+  border-radius: 4px;
+  color: #5F6368;
+  min-width: 22px;
+  text-align: center;
+}
+.cam-tool:hover { background: #F1F3F4; }
+.cam-tool.sep {
+  width: 1px;
+  background: #DADCE0;
+  padding: 0;
+  margin: 0 4px;
+  height: 20px;
+}
+.cam-name-box {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #DADCE0;
+  background: #FFFFFF;
+  font-size: 12px;
+}
+.cam-cell-ref {
+  width: 60px;
+  padding: 4px 8px;
+  border-right: 1px solid #DADCE0;
+  color: #5F6368;
+}
+.cam-formula {
+  padding: 4px 8px;
+  border-right: 1px solid #DADCE0;
+  color: #5F6368;
+  font-style: italic;
+}
+.cam-formula-input { flex: 1; padding: 4px 10px; }
+.cam-sheet {
+  flex: 1;
+  overflow: auto;
+  background: #FFFFFF;
+}
+.cam-row {
+  display: grid;
+  grid-template-columns: 40px 200px 80px 80px 100px 70px 70px 130px 1fr;
+  border-bottom: 1px solid #E8EAED;
+  font-size: 12px;
+}
+.cam-cell {
+  padding: 6px 8px;
+  border-right: 1px solid #E8EAED;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cam-rownum {
+  background: #F8F9FA;
+  color: #5F6368;
+  text-align: center;
+  font-size: 11px;
+  padding: 6px 4px;
+}
+.cam-header-row {
+  background: #F8F9FA;
+  color: #5F6368;
+  font-weight: 500;
+}
+.cam-col-titles .cam-cell { color: #202124; }
+.cam-rows .cam-row:hover { background: #F8F9FA; }
+.cam-row button {
+  background: transparent;
+  border: none;
+  color: #1A73E8;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.cam-row button:hover { text-decoration: underline; }
+.cam-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px;
+  background: #F1F3F4;
+  border-top: 1px solid #DADCE0;
+  font-size: 11px;
+  color: #5F6368;
+}
+.cam-status-sep { color: #DADCE0; }
+.cam-spacer { flex: 1; }
+.cam-hint { color: #1A73E8; font-style: italic; }
+
 /* ===== 小窓モード ===== */
 .mini-panel {
   display: none;

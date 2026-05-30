@@ -295,6 +295,7 @@
     updateStatusFinal();
     // mini-mode の結果リストも更新
     if (document.body.classList.contains('mini-mode')) renderMiniResults();
+    if (document.body.classList.contains('camouflage-active')) renderCamouflageRows();
   }
 
   /* ---- 結果リスト DOM ---- */
@@ -494,9 +495,57 @@
     });
   }
 
-  function toggleCamouflage() {
-    document.body.classList.toggle('camouflage-active');
-    console.log('[エコノフリ] 擬態モード切替（UIは後フェーズ）');
+  function toggleCamouflage(force) {
+    const willBe = typeof force === 'boolean' ? force : !document.body.classList.contains('camouflage-active');
+    document.body.classList.toggle('camouflage-active', willBe);
+    const cam = document.getElementById('cam-mode');
+    if (cam) cam.setAttribute('aria-hidden', willBe ? 'false' : 'true');
+    if (willBe) renderCamouflageRows();
+  }
+
+  function renderCamouflageRows() {
+    const list = document.getElementById('cam-rows');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!state.results.length) {
+      // 空のセル群でそれっぽく見せる
+      for (let i = 0; i < 12; i++) {
+        const row = document.createElement('div');
+        row.className = 'cam-row';
+        row.innerHTML = `<div class="cam-cell cam-rownum">${i + 2}</div>` + '<div class="cam-cell"></div>'.repeat(8);
+        list.appendChild(row);
+      }
+      return;
+    }
+    state.results.forEach((entry, idx) => {
+      const row = document.createElement('div');
+      row.className = 'cam-row';
+      const kindLabel = t('kind' + entry.kind.charAt(0).toUpperCase() + entry.kind.slice(1));
+      const now = new Date();
+      const time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      row.innerHTML = `
+        <div class="cam-cell cam-rownum">${idx + 2}</div>
+        <div class="cam-cell"></div>
+        <div class="cam-cell">${entry.pageCount * 2}</div>
+        <div class="cam-cell">${kindLabel}</div>
+        <div class="cam-cell">完了</div>
+        <div class="cam-cell"><button data-act="print">印刷</button></div>
+        <div class="cam-cell"><button data-act="save">保存</button></div>
+        <div class="cam-cell">${time}</div>
+        <div class="cam-cell"></div>
+      `;
+      row.children[1].textContent = entry.name;
+      row.querySelector('[data-act="print"]').addEventListener('click', () => printOne(entry));
+      row.querySelector('[data-act="save"]').addEventListener('click', () => saveOne(entry));
+      list.appendChild(row);
+    });
+    // 残りの空行
+    for (let i = state.results.length; i < 12; i++) {
+      const row = document.createElement('div');
+      row.className = 'cam-row';
+      row.innerHTML = `<div class="cam-cell cam-rownum">${i + 2}</div>` + '<div class="cam-cell"></div>'.repeat(8);
+      list.appendChild(row);
+    }
   }
 
   function setupHeaderButtons() {
@@ -517,6 +566,7 @@
     document.getElementById('mini-panel-add')?.addEventListener('click', () => {
       openOverlay('dropzone-overlay');
     });
+    document.getElementById('cam-exit')?.addEventListener('click', () => toggleCamouflage(false));
   }
 
   function toggleMiniMode(force) {

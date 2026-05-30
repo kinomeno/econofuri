@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#7BBC7E">
   <meta name="description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <title>エコノフリ - 私の安全管理印刷</title>
-  <link rel="stylesheet" href="css/style.css?v=0.17">
+  <link rel="stylesheet" href="css/style.css?v=0.18">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -36,7 +36,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.17</span>
+          <span class="version">Ver0.18</span>
         </div>
       </div>
     </div>
@@ -243,6 +243,83 @@
 
   </main>
 
+  <!-- カモフラージュ画面モード：スプレッドシート風 -->
+  <div class="cam-mode" id="cam-mode" aria-hidden="true">
+    <header class="cam-titlebar">
+      <span class="cam-title-text">月次集計_2026.xlsx — スプレッドシート</span>
+      <span class="cam-autosave">✓ 自動保存済み</span>
+      <div class="cam-window-btns">
+        <button class="cam-wbtn" id="cam-exit" title="戻る">×</button>
+      </div>
+    </header>
+    <div class="cam-menubar">
+      <span class="cam-menu">ファイル</span>
+      <span class="cam-menu">編集</span>
+      <span class="cam-menu">表示</span>
+      <span class="cam-menu">挿入</span>
+      <span class="cam-menu">書式</span>
+      <span class="cam-menu">データ</span>
+      <span class="cam-menu">ツール</span>
+      <span class="cam-menu">拡張機能</span>
+      <span class="cam-menu">ヘルプ</span>
+    </div>
+    <div class="cam-toolbar">
+      <span class="cam-tool">↶</span>
+      <span class="cam-tool">↷</span>
+      <span class="cam-tool">🖨</span>
+      <span class="cam-tool sep"></span>
+      <span class="cam-tool">100%</span>
+      <span class="cam-tool sep"></span>
+      <span class="cam-tool"><b>B</b></span>
+      <span class="cam-tool"><i>I</i></span>
+      <span class="cam-tool"><u>U</u></span>
+      <span class="cam-tool sep"></span>
+      <span class="cam-tool">⌗</span>
+      <span class="cam-tool">¥</span>
+      <span class="cam-tool">%</span>
+      <span class="cam-tool sep"></span>
+      <span class="cam-tool">⥁</span>
+      <span class="cam-tool">Σ</span>
+    </div>
+    <div class="cam-name-box">
+      <div class="cam-cell-ref">A1</div>
+      <div class="cam-formula">fx</div>
+      <div class="cam-formula-input"></div>
+    </div>
+    <div class="cam-sheet" id="cam-sheet">
+      <div class="cam-row cam-header-row">
+        <div class="cam-cell cam-rownum"></div>
+        <div class="cam-cell">A</div>
+        <div class="cam-cell">B</div>
+        <div class="cam-cell">C</div>
+        <div class="cam-cell">D</div>
+        <div class="cam-cell">E</div>
+        <div class="cam-cell">F</div>
+        <div class="cam-cell">G</div>
+        <div class="cam-cell">H</div>
+      </div>
+      <div class="cam-row cam-header-row cam-col-titles">
+        <div class="cam-cell cam-rownum">1</div>
+        <div class="cam-cell"><b>ファイル名</b></div>
+        <div class="cam-cell"><b>ページ数</b></div>
+        <div class="cam-cell"><b>種類</b></div>
+        <div class="cam-cell"><b>ステータス</b></div>
+        <div class="cam-cell"><b>印刷</b></div>
+        <div class="cam-cell"><b>保存</b></div>
+        <div class="cam-cell"><b>更新日時</b></div>
+        <div class="cam-cell"></div>
+      </div>
+      <div class="cam-rows" id="cam-rows"></div>
+    </div>
+    <footer class="cam-statusbar">
+      <span>Sheet1</span>
+      <span class="cam-status-sep">|</span>
+      <span>準備完了</span>
+      <span class="cam-spacer"></span>
+      <span class="cam-hint">Esc 2連打で戻る</span>
+    </footer>
+  </div>
+
   <!-- 小窓モード パネル（body.mini-mode で表示） -->
   <div class="mini-panel" id="mini-panel" aria-hidden="true">
     <header class="mini-panel-header">
@@ -375,10 +452,10 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.17"></script>
-  <script src="js/file-processor.js?v=0.17"></script>
-  <script src="js/dummy-engine.js?v=0.17"></script>
-  <script src="js/pdf-builder.js?v=0.17"></script>
-  <script src="js/main.js?v=0.17"></script>
+  <script src="js/i18n.js?v=0.18"></script>
+  <script src="js/file-processor.js?v=0.18"></script>
+  <script src="js/dummy-engine.js?v=0.18"></script>
+  <script src="js/pdf-builder.js?v=0.18"></script>
+  <script src="js/main.js?v=0.18"></script>
 </body>
 </html>
