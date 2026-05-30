@@ -644,8 +644,8 @@
     doublePrint: 'econofuri.opt.doublePrint',
     autoPreview: 'econofuri.opt.autoPreview',
   };
-  // 暫定パスワード（公開時は note 販売側で配布）
-  const UNLOCK_PASSWORD = 'kinomeno2026';
+  // 解放パスワード（noteの有料記事「キノメノのパスワード」で配布）
+  const UNLOCK_PASSWORD = 'efuri';
 
   function setupSettingsPanel() {
     // 濃度ラジオ
