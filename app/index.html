@@ -21,7 +21,7 @@
   <meta name="twitter:description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <meta name="twitter:image" content="https://econofuri.vercel.app/og-image.png">
   <meta name="author" content="キノメノ / Kinomeno">
-  <link rel="stylesheet" href="css/style.css?v=0.28">
+  <link rel="stylesheet" href="css/style.css?v=0.29">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -51,7 +51,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.28</span>
+          <span class="version">Ver0.29</span>
         </div>
       </div>
     </div>
@@ -280,25 +280,39 @@
         <div class="settings-modes">
           <button class="settings-mode-btn" data-mode="standard"><span data-i18n="modeStandard">スタンダード</span><span class="settings-mode-free" data-i18n="free">無料</span></button>
           <button class="settings-mode-btn" data-mode="camouflage"><span data-i18n="modeSpreadsheet">スプレッドシート風</span><span class="settings-mode-free" data-i18n="free">無料</span></button>
-          <button class="settings-mode-btn locked" data-mode="task" data-locked="1"><span data-i18n="modeTask">タスク管理風</span><span class="settings-mode-paid" data-i18n="paid">🔒 有料</span></button>
-          <button class="settings-mode-btn locked" data-mode="mail" data-locked="1"><span data-i18n="modeMail">メールクライアント風</span><span class="settings-mode-paid" data-i18n="paid">🔒 有料</span></button>
-          <button class="settings-mode-btn locked" data-mode="filex" data-locked="1"><span data-i18n="modeFileTransfer">ファイル転送ツール風</span><span class="settings-mode-paid" data-i18n="paid">🔒 有料</span></button>
+          <button class="settings-mode-btn" data-mode="task"><span data-i18n="modeTask">タスク管理風</span><span class="settings-mode-free" data-i18n="free">無料</span></button>
+          <button class="settings-mode-btn" data-mode="mail"><span data-i18n="modeMail">メールクライアント風</span><span class="settings-mode-free" data-i18n="free">無料</span></button>
+          <button class="settings-mode-btn" data-mode="filex"><span data-i18n="modeFileTransfer">ファイル転送ツール風</span><span class="settings-mode-free" data-i18n="free">無料</span></button>
         </div>
       </section>
 
       <section class="settings-section">
-        <h4 class="settings-h">業界別ダミー <span class="settings-paid-note">（解放後に選択可）</span></h4>
+        <h4 class="settings-h">業界別ダミー <span class="settings-free-note">（全部無料！）</span></h4>
         <div class="settings-industries">
-          <label><input type="checkbox" class="industry-toggle" value="construction" disabled><span>建設系</span></label>
-          <label><input type="checkbox" class="industry-toggle" value="sales" disabled><span>営業系</span></label>
-          <label><input type="checkbox" class="industry-toggle" value="print" disabled><span>印刷業界</span></label>
-          <label><input type="checkbox" class="industry-toggle" value="restaurant" disabled><span>飲食業界</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="construction" checked><span>建設系</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="sales" checked><span>営業系</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="print" checked><span>印刷業界</span></label>
+          <label><input type="checkbox" class="industry-toggle" value="restaurant" checked><span>飲食業界</span></label>
         </div>
+        <p class="settings-note">チェックを外すとそのジャンルのダミーは出なくなります（自分の業界はOFFにしたい人向け）。</p>
       </section>
 
       <section class="settings-section">
+        <h4 class="settings-h">無料で公開しています</h4>
+        <p class="settings-note">エコノフリは <b>全機能を無料</b>で公開しています。気に入っていただけたら、ko-fi や note のチップ機能で応援していただけると次の開発の励みになります。</p>
+        <div class="settings-support-actions">
+          <a href="https://ko-fi.com/kinomeno" target="_blank" rel="noopener" class="howto-support-btn">☞ ko-fiで支援</a>
+          <a href="https://note.com/kinomeno" target="_blank" rel="noopener" class="howto-support-btn">☞ noteでチップ</a>
+        </div>
+      </section>
+
+      <!--
+        ［将来用・非表示］有料パターン解放セクション。
+        Ver0.29で全機能無料化したため非表示。再び有料化したくなったら
+        このコメントを外し、main.js の applyUnlockState を旧仕様（パスワード判定）に戻す。
+      <section class="settings-section" id="settings-unlock-section">
         <h4 class="settings-h" data-i18n="paidUnlock">有料パターンの解放</h4>
-        <p class="settings-note" data-i18n="paidUnlockText">追加パターン（業界別ダミー・有料の画面モード）は解放パスワードで使えるようになります。<br>・購入はこちら（noteの販売ページ「キノメノのパスワード」へリンク）<br>・<b>会員登録は不要</b>です。メールアドレスだけで購入できます。<br>・支払いは PayPay・クレジットカード・Amazon Pay などから選べます。<br>・購入後、メールでパスワードが届きます。</p>
+        <p class="settings-note" data-i18n="paidUnlockText">追加パターンは解放パスワードで使えるようになります。</p>
         <div class="settings-unlock">
           <input type="text" id="settings-password" class="settings-password-input" placeholder="パスワードを入力">
           <button class="btn-primary" id="settings-unlock-btn" data-i18n="unlock">解除</button>
@@ -306,6 +320,8 @@
         <a href="https://note.com/kinomeno_password" target="_blank" rel="noopener" class="settings-buy-link" data-i18n="buyHere">☞ 購入はこちら（noteの販売ページへ）</a>
         <div class="settings-unlock-status" id="settings-unlock-status"></div>
       </section>
+      -->
+
 
       <section class="settings-section">
         <h4 class="settings-h" data-i18n="other">その他</h4>
@@ -644,10 +660,10 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.28"></script>
-  <script src="js/file-processor.js?v=0.28"></script>
-  <script src="js/dummy-engine.js?v=0.28"></script>
-  <script src="js/pdf-builder.js?v=0.28"></script>
-  <script src="js/main.js?v=0.28"></script>
+  <script src="js/i18n.js?v=0.29"></script>
+  <script src="js/file-processor.js?v=0.29"></script>
+  <script src="js/dummy-engine.js?v=0.29"></script>
+  <script src="js/pdf-builder.js?v=0.29"></script>
+  <script src="js/main.js?v=0.29"></script>
 </body>
 </html>

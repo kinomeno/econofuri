@@ -466,6 +466,8 @@ body[data-app-state="results"] .features {
   cursor: pointer;
 }
 .settings-paid-note { font-size: 11px; color: var(--text-mute); margin-left: 4px; }
+.settings-free-note { font-size: 11px; color: var(--green-deep); margin-left: 4px; font-weight: 600; }
+.settings-support-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .settings-industries {
   display: flex;
   flex-wrap: wrap;

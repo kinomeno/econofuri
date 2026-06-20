@@ -13,12 +13,12 @@
 
   // 直近の生成結果（再生成用に表ページCanvasを保持）
   const state = {
-    results: [],         // { name, kind, canvases, blobUrl, pageCount }
+    results: [],
     density: 'normal',
     skippedNames: [],
     lastEscAt: 0,
-    unlocked: false,
-    industries: [],     // 選択中の業界 ['construction', ...]
+    unlocked: true,    // Ver0.29: 全機能無料化、常に解放状態
+    industries: ['construction', 'sales', 'print', 'restaurant'], // デフォルト全業界 ON
   };
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -823,24 +823,8 @@
       });
     });
 
-    // 有料解放
-    const pwInput = document.getElementById('settings-password');
-    const unlockBtn = document.getElementById('settings-unlock-btn');
-    const statusEl = document.getElementById('settings-unlock-status');
-    if (unlockBtn && pwInput) {
-      unlockBtn.addEventListener('click', () => {
-        if (pwInput.value === UNLOCK_PASSWORD) {
-          localStorage.setItem(SETTINGS_KEYS.unlock, '1');
-          applyUnlockState(true);
-          statusEl.textContent = t('unlockOk');
-          statusEl.className = 'settings-unlock-status ok';
-        } else {
-          statusEl.textContent = t('unlockFail');
-          statusEl.className = 'settings-unlock-status fail';
-        }
-      });
-    }
-    applyUnlockState(localStorage.getItem(SETTINGS_KEYS.unlock) === '1');
+    // Ver0.29: 有料解放UIは廃止（全機能無料化）
+    applyUnlockState();
     setupIndustryToggles();
 
     // その他オプション
@@ -857,14 +841,12 @@
   }
 
   function applyScreenMode(mode) {
-    // 全モードを一旦オフ
     document.body.classList.remove('mini-mode', 'camouflage-active', 'task-mode-active', 'mail-mode-active', 'filex-mode-active');
     if (mode === 'camouflage') toggleCamouflage(true);
     else if (mode === 'mini') toggleMiniMode(true);
     else if (mode === 'task') toggleTaskMode(true);
     else if (mode === 'mail') toggleMailMode(true);
     else if (mode === 'filex') toggleFilexMode(true);
-    // 'standard' は何もしない
   }
 
   function toggleTaskMode(force) {
@@ -984,25 +966,19 @@
     });
   }
 
-  function applyUnlockState(unlocked) {
-    document.querySelectorAll('.settings-mode-btn.locked').forEach(btn => {
-      btn.classList.toggle('unlocked', !!unlocked);
-    });
+  function applyUnlockState() {
+    // Ver0.29: 全機能無料化、常に解放状態
+    state.unlocked = true;
+    // 業界選択は localStorage を尊重、無ければデフォルト（全業界 ON）
+    const saved = localStorage.getItem('econofuri.industries');
+    const arr = saved !== null
+      ? saved.split(',').filter(Boolean)
+      : ['construction', 'sales', 'print', 'restaurant'];
+    state.industries = arr;
     document.querySelectorAll('.industry-toggle').forEach(cb => {
-      cb.disabled = !unlocked;
+      cb.disabled = false;
+      cb.checked = arr.includes(cb.value);
     });
-    state.unlocked = !!unlocked;
-    // 業界選択を設定からロード
-    if (unlocked) {
-      const saved = localStorage.getItem('econofuri.industries');
-      const arr = saved ? saved.split(',').filter(Boolean) : [];
-      state.industries = arr;
-      document.querySelectorAll('.industry-toggle').forEach(cb => {
-        cb.checked = arr.includes(cb.value);
-      });
-    } else {
-      state.industries = [];
-    }
   }
 
   function setupIndustryToggles() {
