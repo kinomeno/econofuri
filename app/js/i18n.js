@@ -43,7 +43,7 @@ const I18N = {
     privacy: 'すべてブラウザ内で処理しています。ファイルは外部に送信されません。',
     privacyMore: 'プライバシーについて ›',
     // Esc
-    escHint: 'を2連打で擬態モードへ',
+    escHint: '2連打／クリックで擬態モード（押すたび変化）',
     // フッター
     kofi: 'ko-fiで支援',
     noteTip: 'noteでチップ',
@@ -146,7 +146,7 @@ const I18N = {
     feat3Desc: 'Print double-sided and it looks like you used recycled paper.',
     privacy: 'Everything runs in your browser. Files are never sent externally.',
     privacyMore: 'About privacy ›',
-    escHint: 'twice for camouflage mode',
+    escHint: 'Double-Esc / click to cycle camouflage modes',
     kofi: 'Support on ko-fi',
     noteTip: 'Tip on note',
     shareX: 'Share on X',

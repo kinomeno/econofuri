@@ -591,22 +591,50 @@
   function setupEscHint() {
     const closeBtn = document.getElementById('esc-close');
     const hint = document.getElementById('esc-hint');
-    if (closeBtn && hint) {
-      closeBtn.addEventListener('click', () => hint.classList.add('hidden'));
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hint.classList.add('hidden');
+      });
+    }
+    // ヒント本体クリックで擬態モードを循環
+    if (hint) {
+      hint.style.cursor = 'pointer';
+      hint.addEventListener('click', () => cycleCamouflageMode());
     }
   }
 
   function setupHotkey() {
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
+      // overlay が開いている時は閉じる側を優先（setupOverlays が別途処理）
       const now = Date.now();
       if (now - state.lastEscAt < 400) {
-        toggleCamouflage();
+        cycleCamouflageMode();
         state.lastEscAt = 0;
       } else {
         state.lastEscAt = now;
       }
     });
+  }
+
+  // 擬態モードの循環順。standard はカモフラージュ解除（通常UI）。
+  const CAMO_CYCLE = ['standard', 'camouflage', 'task', 'mail', 'filex'];
+
+  function currentCamoMode() {
+    if (document.body.classList.contains('camouflage-active')) return 'camouflage';
+    if (document.body.classList.contains('task-mode-active')) return 'task';
+    if (document.body.classList.contains('mail-mode-active')) return 'mail';
+    if (document.body.classList.contains('filex-mode-active')) return 'filex';
+    return 'standard';
+  }
+
+  function cycleCamouflageMode() {
+    const cur = currentCamoMode();
+    const idx = CAMO_CYCLE.indexOf(cur);
+    const next = CAMO_CYCLE[(idx + 1) % CAMO_CYCLE.length];
+    applyScreenMode(next);
+    // 設定パネルが開いていれば閉じておく（擬態の没入を妨げない）
   }
 
   function toggleCamouflage(force) {
