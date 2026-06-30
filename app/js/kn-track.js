@@ -42,6 +42,9 @@
   // アプリ名が未設定なら一切動かない（単体アクセス／他所への貼り付けでの暴発防止）
   if (!APP) return;
 
+  // 管理画面など「集計から外したい」入口は ?kn_notrack=1 で無効化（一切送信しない）
+  try { if (/[?&]kn_notrack=1(?:&|$)/.test(location.search)) { window.knTrack = function () {}; return; } } catch (e) {}
+
   var sentOpen = false;
 
   function send(event) {
