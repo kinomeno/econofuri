@@ -337,6 +337,8 @@
     }
     updateCount();
     updateStatusFinal();
+    // 成果イベント：PDFを1件以上生成できた＝このアプリのゴール到達。匿名で1回だけ記録。
+    if (added > 0 && typeof window.knTrack === 'function') window.knTrack('goal');
     // mini-mode の結果リストも更新
     if (document.body.classList.contains('mini-mode')) renderMiniResults();
     if (document.body.classList.contains('camouflage-active')) renderCamouflageRows();

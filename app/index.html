@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="favicon.svg">
   <!-- OGP -->
   <meta property="og:title" content="エコノフリ — 私の安全管理印刷">
-  <meta property="og:description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。すべてブラウザ内処理、外部送信なし。">
+  <meta property="og:description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。すべてブラウザ内処理、ファイルの外部送信なし。">
   <meta property="og:image" content="https://econofuri.vercel.app/og-image.png">
   <meta property="og:url" content="https://econofuri.vercel.app/">
   <meta property="og:type" content="website">
@@ -21,7 +21,7 @@
   <meta name="twitter:description" content="印刷したいファイルを入れるだけで、表＝書類／裏＝裏紙風ダミーの表裏交互PDFを生成。">
   <meta name="twitter:image" content="https://econofuri.vercel.app/og-image.png">
   <meta name="author" content="キノメノ / Kinomeno">
-  <link rel="stylesheet" href="css/style.css?v=0.30">
+  <link rel="stylesheet" href="css/style.css?v=0.31">
   <!-- 外部ライブラリ：pdf-lib（PDF組立）、pdf.js（PDF読込） -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -51,7 +51,7 @@
         </div>
         <div class="logo-small-tag">
           <span class="watashi">私の</span><span data-i18n="subtitle2">安全管理印刷</span>
-          <span class="version">Ver0.30</span>
+          <span class="version">Ver0.31</span>
         </div>
       </div>
     </div>
@@ -660,10 +660,12 @@
     </a>
   </footer>
 
-  <script src="js/i18n.js?v=0.30"></script>
-  <script src="js/file-processor.js?v=0.30"></script>
-  <script src="js/dummy-engine.js?v=0.30"></script>
-  <script src="js/pdf-builder.js?v=0.30"></script>
-  <script src="js/main.js?v=0.30"></script>
+  <script src="js/i18n.js?v=0.31"></script>
+  <script src="js/file-processor.js?v=0.31"></script>
+  <script src="js/dummy-engine.js?v=0.31"></script>
+  <script src="js/pdf-builder.js?v=0.31"></script>
+  <!-- キノメノ共通アクセス計測（匿名・ファイル内容は送らない） -->
+  <script src="js/kn-track.js?v=0.31" data-kn-app="econofuri"></script>
+  <script src="js/main.js?v=0.31"></script>
 </body>
 </html>
